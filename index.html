@@ -3,132 +3,211 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Control Envíos Flex</title>
+  <title>Envíos Flex · Bitek</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --azul: #1a73e8; --azul-osc: #174ea6; --verde: #188038; --rojo: #c5221f;
-      --naranja: #e8710a; --gris: #5f6368; --borde: #dadce0; --fondo: #f1f3f4;
+      --azul: #2563eb; --azul-hover: #1d4ed8; --verde: #16a34a; --rojo: #dc2626;
+      --naranja: #ea580c; --gris: #64748b; --texto: #0f172a; --borde: #e2e8f0;
+      --fondo: #f1f5f9; --sidebar: #0f172a; --sidebar2: #1e293b;
+      --sombra: 0 4px 20px rgba(15, 23, 42, .06);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, Roboto, 'Segoe UI', sans-serif; background: var(--fondo); min-height: 100vh; padding-bottom: 76px; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--fondo); color: var(--texto); min-height: 100vh; }
 
-    .top { background: var(--azul); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
-           position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
-    .top .title { font-weight: 700; font-size: 17px; }
-    .top .user { font-size: 11px; opacity: .9; text-align: right; }
+    /* ============ LOGIN ============ */
+    #stepLogin { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+                 background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
+    .login-card { background: #fff; border-radius: 22px; padding: 44px 36px; width: 100%; max-width: 400px;
+                  text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+    .login-card .icon { font-size: 52px; margin-bottom: 6px; }
+    .login-card h1 { font-size: 22px; font-weight: 800; margin: 6px 0 4px; }
+    .login-card p { color: var(--gris); font-size: 14px; margin-bottom: 24px; }
+    #gsiBtn { display: flex; justify-content: center; }
 
-    .wrap { max-width: 760px; margin: 0 auto; padding: 14px; }
-    .card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.10); margin-bottom: 14px; }
-    h2.sec-title { font-size: 15px; color: var(--gris); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    /* ============ LAYOUT ============ */
+    #shell { display: flex; min-height: 100vh; }
 
-    .btn { display: block; width: 100%; border: none; border-radius: 12px; padding: 16px; font-size: 18px;
-           font-weight: 700; cursor: pointer; transition: opacity .15s; }
-    .btn:active { opacity: .7; }
+    .sidebar { width: 232px; background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar2) 100%);
+               color: #cbd5e1; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; }
+    .sidebar .logo { padding: 22px 20px 18px; font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px;
+                     border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sidebar .logo .lg-ico { font-size: 24px; }
+    .sidebar nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; }
+    .sidebar nav button { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: none;
+                          color: #94a3b8; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600;
+                          font-family: inherit; cursor: pointer; transition: all .15s; text-align: left; }
+    .sidebar nav button:hover { background: rgba(255,255,255,.06); color: #e2e8f0; }
+    .sidebar nav button.on { background: var(--azul); color: #fff; box-shadow: 0 4px 14px rgba(37, 99, 235, .4); }
+    .sidebar nav button .ico { font-size: 19px; width: 24px; text-align: center; }
+    .sidebar .foot { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11px; color: #64748b;
+                     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    main { flex: 1; margin-left: 232px; padding: 26px 30px 50px; max-width: 1060px; }
+    .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--gris); margin-bottom: 22px; }
+
+    @media (max-width: 760px) {
+      .sidebar { width: 68px; }
+      .sidebar .logo { padding: 18px 0; justify-content: center; }
+      .sidebar .logo span.txt, .sidebar nav button span.txt, .sidebar .foot { display: none; }
+      .sidebar nav button { justify-content: center; padding: 14px 0; }
+      main { margin-left: 68px; padding: 18px 14px 40px; }
+    }
+
+    /* ============ COMPONENTES ============ */
+    .card { background: #fff; border-radius: 18px; padding: 22px; box-shadow: var(--sombra); margin-bottom: 16px;
+            border: 1px solid var(--borde); }
+    h2.sec-title { font-size: 13px; color: var(--gris); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; font-weight: 700; }
+
+    .btn { display: block; width: 100%; border: none; border-radius: 12px; padding: 15px; font-size: 16px;
+           font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
+    .btn:active { transform: scale(.98); }
     .btn:disabled { opacity: .4; }
     .btn-primary { background: var(--azul); color: #fff; }
+    .btn-primary:hover { background: var(--azul-hover); }
     .btn-green { background: var(--verde); color: #fff; }
-    .btn-gray { background: #e8eaed; color: #3c4043; font-size: 15px; padding: 12px; }
-    .btn-sm { padding: 10px 14px; font-size: 14px; width: auto; display: inline-block; }
+    .btn-gray { background: #eef2f7; color: #334155; font-size: 14px; padding: 12px; }
+    .btn-sm { padding: 9px 16px; font-size: 13px; width: auto; display: inline-block; }
 
-    input.field { width: 100%; font-size: 17px; padding: 13px; border: 2px solid var(--borde); border-radius: 10px; }
-    input.field:focus { border-color: var(--azul); outline: none; }
-    input.big { font-size: 26px; font-weight: 700; text-align: center; letter-spacing: 2px; }
-    input.field:disabled { background: var(--fondo); color: #9aa0a6; }
-    label.fld { display: block; font-size: 13px; font-weight: 600; color: var(--gris); margin: 12px 0 6px; }
+    input.field { width: 100%; font-size: 16px; padding: 13px 14px; border: 2px solid var(--borde); border-radius: 12px;
+                  font-family: inherit; transition: border .15s; background: #fff; }
+    input.field:focus { border-color: var(--azul); outline: none; box-shadow: 0 0 0 4px rgba(37,99,235,.1); }
+    input.big { font-size: 24px; font-weight: 700; text-align: center; letter-spacing: 2px; }
+    input.field:disabled { background: var(--fondo); color: #94a3b8; }
+    label.fld { display: block; font-size: 13px; font-weight: 600; color: var(--gris); margin: 12px 0 7px; }
 
-    .envio-badge { background: #e6f4ea; border: 2px solid var(--verde); color: var(--verde); border-radius: 10px;
-                   padding: 10px; text-align: center; font-size: 19px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
+    .envio-badge { background: #f0fdf4; border: 2px solid var(--verde); color: #15803d; border-radius: 12px;
+                   padding: 12px; text-align: center; font-size: 19px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
 
     .matanza { display: flex; gap: 10px; margin: 12px 0; }
-    .mat-btn { flex: 1; padding: 13px 6px; border: 2px solid var(--borde); border-radius: 10px; background: #fff;
-               font-size: 14px; font-weight: 700; color: var(--gris); cursor: pointer; }
-    .mat-btn.on { border-color: var(--naranja); background: #fef7e0; color: var(--naranja); }
+    .mat-btn { flex: 1; padding: 13px 6px; border: 2px solid var(--borde); border-radius: 12px; background: #fff;
+               font-size: 13px; font-weight: 700; color: var(--gris); font-family: inherit; cursor: pointer; transition: all .15s; }
+    .mat-btn.on { border-color: var(--naranja); background: #fff7ed; color: var(--naranja); }
 
     .cordones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
-    .cord-btn { padding: 13px 4px; border: 2px solid var(--borde); border-radius: 10px; background: #fff;
-                font-size: 15px; font-weight: 800; cursor: pointer; }
-    .cord-btn.on { border-color: var(--azul); background: #e8f0fe; color: var(--azul); }
+    .cord-btn { padding: 13px 4px; border: 2px solid var(--borde); border-radius: 12px; background: #fff;
+                font-size: 15px; font-weight: 800; font-family: inherit; cursor: pointer; transition: all .15s; }
+    .cord-btn.on { border-color: var(--azul); background: #eff6ff; color: var(--azul); }
 
-    .msg { border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 600; margin: 10px 0; text-align: center; }
-    .msg-ok { background: #e6f4ea; color: var(--verde); }
-    .msg-err { background: #fce8e6; color: var(--rojo); }
-    .msg-warn { background: #fef7e0; color: #b05a00; }
+    .msg { border-radius: 12px; padding: 13px; font-size: 14px; font-weight: 600; margin: 10px 0; text-align: center; }
+    .msg-ok { background: #f0fdf4; color: #15803d; }
+    .msg-err { background: #fef2f2; color: var(--rojo); }
+    .msg-warn { background: #fffbeb; color: #b45309; }
 
     .hidden { display: none !important; }
-
-    /* Navegación inferior */
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; z-index: 20;
-           border-top: 1px solid var(--borde); box-shadow: 0 -2px 8px rgba(0,0,0,.06); }
-    .nav button { flex: 1; border: none; background: none; padding: 9px 4px 11px; font-size: 11px; font-weight: 600;
-                  color: var(--gris); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .nav button .ico { font-size: 21px; }
-    .nav button.on { color: var(--azul); }
-    .nav button.on .ico { transform: scale(1.1); }
+    .hint { font-size: 12px; color: var(--gris); margin-top: 10px; text-align: center; line-height: 1.5; }
 
     /* Dashboard */
-    .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-    .stat { background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.10); }
-    .stat .num { font-size: 20px; font-weight: 800; color: var(--azul); }
-    .stat .lbl { font-size: 11px; color: var(--gris); margin-top: 3px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .stat { background: #fff; border-radius: 18px; padding: 18px; box-shadow: var(--sombra); border: 1px solid var(--borde); }
+    .stat .ic { font-size: 20px; margin-bottom: 8px; }
+    .stat .num { font-size: 22px; font-weight: 800; }
+    .stat .lbl { font-size: 12px; color: var(--gris); margin-top: 3px; font-weight: 500; }
+    .stat.azul .num { color: var(--azul); }
+    .stat.verde .num { color: var(--verde); }
 
-    .tbl-wrap { overflow-x: auto; }
+    .tbl-wrap { overflow-x: auto; border-radius: 12px; }
     table { border-collapse: collapse; width: 100%; font-size: 13px; white-space: nowrap; }
-    th { background: #e8f0fe; color: var(--azul-osc); padding: 8px; text-align: left; font-size: 12px; }
-    td { padding: 8px; border-bottom: 1px solid #eee; }
-    tr.total td { font-weight: 800; background: #fef7e0; }
+    th { background: #f8fafc; color: #475569; padding: 10px 12px; text-align: left; font-size: 11px;
+         text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid var(--borde); }
+    td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    tr:hover td { background: #f8fafc; }
+    tr.total td { font-weight: 800; background: #fffbeb; }
     td.money, th.money { text-align: right; }
-    .zona-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-    .z-CABA { background: #e8f0fe; color: var(--azul); }
-    .z-C1 { background: #e6f4ea; color: var(--verde); }
-    .z-C2 { background: #fef7e0; color: var(--naranja); }
-    .z-C3 { background: #fce8e6; color: var(--rojo); }
-    .z-OTRA { background: #eee; color: var(--gris); }
+    .zona-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .z-CABA { background: #eff6ff; color: var(--azul); }
+    .z-C1 { background: #f0fdf4; color: var(--verde); }
+    .z-C2 { background: #fff7ed; color: var(--naranja); }
+    .z-C3 { background: #fef2f2; color: var(--rojo); }
+    .z-OTRA, .z- { background: #f1f5f9; color: var(--gris); }
 
-    .counter { text-align: center; color: var(--gris); font-size: 13px; padding: 6px 0 14px; }
-    .counter b { color: var(--azul); font-size: 16px; }
-    .login-box { text-align: center; padding: 26px 0; }
-    .login-box .icon { font-size: 48px; margin-bottom: 10px; }
-    .login-box p { color: var(--gris); font-size: 14px; margin-bottom: 18px; }
-    #gsiBtn { display: flex; justify-content: center; }
-    .refresh-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .hint { font-size: 12px; color: var(--gris); margin-top: 8px; text-align: center; }
-    .tarifa-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-    .tarifa-row .zn { width: 60px; font-weight: 800; }
-    .big-ok { text-align: center; padding: 26px 10px; }
-    .big-ok .check { font-size: 60px; }
-    .big-ok .det { font-size: 15px; color: var(--gris); margin-top: 8px; }
+    .refresh-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .refresh-row h2 { margin: 0; }
+
+    .counter { text-align: center; color: var(--gris); font-size: 13px; padding: 8px 0; }
+    .counter b { color: var(--azul); font-size: 17px; }
+    .tarifa-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .tarifa-row .zn { width: 64px; text-align: center; }
+    .big-ok { text-align: center; padding: 28px 10px; }
+    .big-ok .check { font-size: 58px; }
+    .big-ok .det { font-size: 14px; color: var(--gris); margin-top: 8px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <div class="top">
-    <div class="title">📦 Envíos Flex</div>
-    <div class="user" id="userLabel"></div>
+
+  <!-- ============ LOGIN ============ -->
+  <div id="stepLogin">
+    <div class="login-card">
+      <div class="icon">📦</div>
+      <h1>Envíos Flex</h1>
+      <p>Ingresá con tu cuenta <b>@bitek.com.ar</b></p>
+      <div id="gsiBtn"></div>
+      <div id="loginMsg"></div>
+    </div>
   </div>
 
-  <div class="wrap">
+  <!-- ============ APP ============ -->
+  <div id="shell" class="hidden">
 
-    <!-- ============ LOGIN ============ -->
-    <div id="stepLogin" class="card">
-      <div class="login-box">
-        <div class="icon">🔐</div>
-        <p>Ingresá con tu cuenta <b>@bitek.com.ar</b><br>para usar el sistema.</p>
-        <div id="gsiBtn"></div>
-        <div id="loginMsg"></div>
+    <aside class="sidebar">
+      <div class="logo"><span class="lg-ico">📦</span><span class="txt">Envíos Flex</span></div>
+      <nav>
+        <button id="nav-dashboard" class="on" onclick="switchSec('dashboard')"><span class="ico">📊</span><span class="txt">Dashboard</span></button>
+        <button id="nav-escaneo" onclick="switchSec('escaneo')"><span class="ico">📷</span><span class="txt">Escaneo</span></button>
+        <button id="nav-cps" onclick="switchSec('cps')"><span class="ico">📮</span><span class="txt">Códigos Postales</span></button>
+        <button id="nav-tarifas" onclick="switchSec('tarifas')"><span class="ico">💲</span><span class="txt">Tarifas</span></button>
+      </nav>
+      <div class="foot" id="userLabel"></div>
+    </aside>
+
+    <main>
+
+      <!-- ========== DASHBOARD ========== -->
+      <div id="sec-dashboard" class="sec">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Quincena actual: <b id="dQuinAct">–</b></div>
+
+        <div class="stats">
+          <div class="stat azul"><div class="ic">📦</div><div class="num" id="dHoyCant">–</div><div class="lbl">Envíos hoy</div></div>
+          <div class="stat verde"><div class="ic">💰</div><div class="num" id="dHoyTotal">–</div><div class="lbl">Gasto hoy</div></div>
+          <div class="stat"><div class="ic">🗂️</div><div class="num" id="dTotalReg">–</div><div class="lbl">Registros totales</div></div>
+          <div class="stat"><div class="ic">📮</div><div class="num" id="dTotalCPs">–</div><div class="lbl">CPs en la base</div></div>
+        </div>
+
+        <div class="card">
+          <div class="refresh-row">
+            <h2 class="sec-title">💰 Gastos por quincena (corte viernes)</h2>
+            <button class="btn btn-gray btn-sm" onclick="loadDashboard(true)">🔄 Actualizar</button>
+          </div>
+          <div class="tbl-wrap" id="tblQuincenas">Cargando…</div>
+        </div>
+
+        <div class="card">
+          <h2 class="sec-title">📅 Gastos por semana (lunes a sábado)</h2>
+          <div class="tbl-wrap" id="tblSemanas">Cargando…</div>
+        </div>
+
+        <div class="card">
+          <h2 class="sec-title">🕐 Últimos registros</h2>
+          <div class="tbl-wrap" id="tblUltimos">Cargando…</div>
+        </div>
       </div>
-    </div>
 
-    <!-- ============ APP ============ -->
-    <div id="app" class="hidden">
+      <!-- ========== ESCANEO ========== -->
+      <div id="sec-escaneo" class="sec hidden">
+        <div class="page-title">Escaneo</div>
+        <div class="page-sub">Escaneá la etiqueta con la pistola lectora</div>
 
-      <!-- ========== SECCIÓN ESCANEO ========== -->
-      <div id="sec-escaneo" class="sec">
         <div id="stepScan" class="card">
-          <h2 class="sec-title">📷 Escaneo de etiqueta</h2>
-          <label class="fld">Escaneá el QR con la pistola (o escribí el N° de envío)</label>
-          <input class="field big" id="inpScan" type="text" placeholder="Esperando lectura…" autocomplete="off" autofocus>
+          <label class="fld">Lectura del QR (o número de envío a mano + Enter)</label>
+          <input class="field big" id="inpScan" type="text" placeholder="Esperando lectura…" autocomplete="off">
           <div id="scanMsg"></div>
-          <div class="hint">El lector escribe acá automáticamente. Si tipeás a mano, poné el número de envío y apretá Enter.</div>
+          <div class="hint">La pistola escribe acá sola. Mantené el cursor en este campo.</div>
         </div>
 
         <div id="stepCP" class="card hidden">
@@ -138,17 +217,17 @@
           <input class="field big" id="inpCP" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" autocomplete="off">
 
           <div class="matanza">
-            <button class="mat-btn" id="matN" onclick="toggleMatanza('NORTE')">La Matanza NORTE</button>
-            <button class="mat-btn" id="matS" onclick="toggleMatanza('SUR')">La Matanza SUR</button>
+            <button class="mat-btn" id="matN" onclick="toggleMatanza('NORTE')">LA MATANZA NORTE</button>
+            <button class="mat-btn" id="matS" onclick="toggleMatanza('SUR')">LA MATANZA SUR</button>
           </div>
 
           <div id="cordonBox" class="hidden">
-            <div class="msg msg-warn">⚠️ El CP <b id="cpDesc"></b> no está en la base.<br>Elegí el cordón para agregarlo:</div>
+            <div class="msg msg-warn" id="cpDescMsg"></div>
             <div class="cordones">
-              <button class="cord-btn" onclick="pickCordon('CABA', this)">CABA</button>
-              <button class="cord-btn" onclick="pickCordon('C1', this)">C1</button>
-              <button class="cord-btn" onclick="pickCordon('C2', this)">C2</button>
-              <button class="cord-btn" onclick="pickCordon('C3', this)">C3</button>
+              <button class="cord-btn cb-scan" onclick="pickCordon('CABA', this)">CABA</button>
+              <button class="cord-btn cb-scan" onclick="pickCordon('C1', this)">C1</button>
+              <button class="cord-btn cb-scan" onclick="pickCordon('C2', this)">C2</button>
+              <button class="cord-btn cb-scan" onclick="pickCordon('C3', this)">C3</button>
             </div>
           </div>
 
@@ -169,84 +248,56 @@
         <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b></div>
       </div>
 
-      <!-- ========== SECCIÓN DASHBOARD ========== -->
-      <div id="sec-dashboard" class="sec hidden">
-        <div class="cards3">
-          <div class="stat"><div class="num" id="dHoyCant">–</div><div class="lbl">Envíos hoy</div></div>
-          <div class="stat"><div class="num" id="dHoyTotal">–</div><div class="lbl">Gasto hoy</div></div>
-          <div class="stat"><div class="num" id="dTotalReg">–</div><div class="lbl">Total registros</div></div>
-        </div>
-
-        <div class="card">
-          <div class="refresh-row">
-            <h2 class="sec-title" style="margin:0">💰 Gastos por quincena</h2>
-            <button class="btn btn-gray btn-sm" onclick="loadDashboard(true)">🔄 Actualizar</button>
-          </div>
-          <div class="tbl-wrap" id="tblQuincenas">Cargando…</div>
-        </div>
-
-        <div class="card">
-          <h2 class="sec-title">📅 Gastos por semana (Lun a Sáb)</h2>
-          <div class="tbl-wrap" id="tblSemanas">Cargando…</div>
-        </div>
-
-        <div class="card">
-          <h2 class="sec-title">🕐 Últimos registros</h2>
-          <div class="tbl-wrap" id="tblUltimos">Cargando…</div>
-        </div>
-      </div>
-
-      <!-- ========== SECCIÓN CPs ========== -->
+      <!-- ========== CPs ========== -->
       <div id="sec-cps" class="sec hidden">
-        <div class="card">
-          <h2 class="sec-title">🔍 Buscar Código Postal</h2>
-          <div style="display:flex; gap:10px">
-            <input class="field big" id="inpBuscarCP" type="text" inputmode="numeric" maxlength="4" placeholder="CP" style="flex:1">
-            <button class="btn btn-primary btn-sm" onclick="buscarCP()" style="padding:0 22px">Buscar</button>
-          </div>
-          <div id="resBuscar"></div>
-        </div>
+        <div class="page-title">Códigos Postales</div>
+        <div class="page-sub">Base de datos CP → Cordón</div>
 
-        <div class="card">
-          <h2 class="sec-title">➕ Agregar o corregir CP</h2>
-          <label class="fld">Código Postal</label>
-          <input class="field big" id="inpNuevoCP" type="text" inputmode="numeric" maxlength="4" placeholder="____">
-          <label class="fld">Cordón</label>
-          <div class="cordones">
-            <button class="cord-btn cp-new" onclick="pickCordonNuevo('CABA', this)">CABA</button>
-            <button class="cord-btn cp-new" onclick="pickCordonNuevo('C1', this)">C1</button>
-            <button class="cord-btn cp-new" onclick="pickCordonNuevo('C2', this)">C2</button>
-            <button class="cord-btn cp-new" onclick="pickCordonNuevo('C3', this)">C3</button>
+        <div class="grid2">
+          <div class="card">
+            <h2 class="sec-title">🔍 Buscar CP</h2>
+            <div style="display:flex; gap:10px">
+              <input class="field big" id="inpBuscarCP" type="text" inputmode="numeric" maxlength="4" placeholder="CP" style="flex:1">
+              <button class="btn btn-primary btn-sm" onclick="buscarCP()" style="padding:0 24px">Buscar</button>
+            </div>
+            <div id="resBuscar"></div>
           </div>
-          <div id="msgNuevoCP"></div>
-          <button class="btn btn-green" onclick="guardarCP()">💾 Guardar CP</button>
-          <div class="hint">Si el CP ya existe, se actualiza su cordón. Todo cambio queda registrado en Log_Errores.</div>
+
+          <div class="card">
+            <h2 class="sec-title">➕ Agregar o corregir CP</h2>
+            <label class="fld">Código Postal</label>
+            <input class="field big" id="inpNuevoCP" type="text" inputmode="numeric" maxlength="4" placeholder="____">
+            <label class="fld">Cordón</label>
+            <div class="cordones">
+              <button class="cord-btn cp-new" onclick="pickCordonNuevo('CABA', this)">CABA</button>
+              <button class="cord-btn cp-new" onclick="pickCordonNuevo('C1', this)">C1</button>
+              <button class="cord-btn cp-new" onclick="pickCordonNuevo('C2', this)">C2</button>
+              <button class="cord-btn cp-new" onclick="pickCordonNuevo('C3', this)">C3</button>
+            </div>
+            <div id="msgNuevoCP"></div>
+            <button class="btn btn-green" onclick="guardarCP()">💾 Guardar CP</button>
+            <div class="hint">Si el CP ya existe se actualiza su cordón. Todo cambio queda auditado en Log_Errores.</div>
+          </div>
         </div>
       </div>
 
-      <!-- ========== SECCIÓN TARIFAS ========== -->
+      <!-- ========== TARIFAS ========== -->
       <div id="sec-tarifas" class="sec hidden">
-        <div class="card">
-          <h2 class="sec-title">💲 Tarifas por cordón</h2>
+        <div class="page-title">Tarifas</div>
+        <div class="page-sub">Costo por cordón que cobra la logística</div>
+
+        <div class="card" style="max-width:460px">
           <div class="tarifa-row"><span class="zn zona-pill z-CABA">CABA</span><input class="field" id="tCABA" type="number" min="0"></div>
           <div class="tarifa-row"><span class="zn zona-pill z-C1">C1</span><input class="field" id="tC1" type="number" min="0"></div>
           <div class="tarifa-row"><span class="zn zona-pill z-C2">C2</span><input class="field" id="tC2" type="number" min="0"></div>
           <div class="tarifa-row"><span class="zn zona-pill z-C3">C3</span><input class="field" id="tC3" type="number" min="0"></div>
           <div id="msgTarifas"></div>
           <button class="btn btn-green" onclick="guardarTarifas()">💾 Guardar tarifas</button>
-          <div class="hint">Los cambios aplican a los escaneos futuros. Los registros históricos conservan el costo del momento del escaneo.</div>
+          <div class="hint">Los cambios aplican a escaneos futuros. Los registros históricos conservan el costo vigente al momento del escaneo (así la auditoría de períodos viejos no se distorsiona).</div>
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Navegación inferior -->
-  <div class="nav hidden" id="navBar">
-    <button id="nav-escaneo" class="on" onclick="switchSec('escaneo')"><span class="ico">📷</span>Escaneo</button>
-    <button id="nav-dashboard" onclick="switchSec('dashboard')"><span class="ico">📊</span>Dashboard</button>
-    <button id="nav-cps" onclick="switchSec('cps')"><span class="ico">📮</span>CPs</button>
-    <button id="nav-tarifas" onclick="switchSec('tarifas')"><span class="ico">💲</span>Tarifas</button>
+    </main>
   </div>
 
 <script>
@@ -261,7 +312,8 @@
   var cordonManual = '';
   var cordonNuevo = '';
   var saving = false;
-  var secActual = 'escaneo';
+  var secActual = 'dashboard';
+  var dashCache = null;
 
   // ---------- utilidades ----------
   function $(id) { return document.getElementById(id); }
@@ -269,7 +321,7 @@
   function hide(id) { $(id).classList.add('hidden'); }
   function setMsg(html, cls) { $('msgBox').innerHTML = html ? '<div class="msg ' + cls + '">' + html + '</div>' : ''; }
   function money(n) { return '$' + Number(n || 0).toLocaleString('es-AR'); }
-  function pill(z) { return '<span class="zona-pill z-' + z + '">' + z + '</span>'; }
+  function pill(z) { return '<span class="zona-pill z-' + z + '">' + (z || '—') + '</span>'; }
 
   function beep(freq, dur) {
     try {
@@ -287,9 +339,13 @@
       method: 'POST',
       body: JSON.stringify({ token: idToken, action: action, payload: payload || {} })
     }).then(function (r) { return r.json(); }).then(function (r) {
-      if (r && r.status === 'NO_AUTH') { sesionVencida(); throw new Error('Sesión vencida'); }
+      if (r && r.status === 'NO_AUTH') { sesionVencida(); throw new Error('SESION'); }
       return r;
     });
+  }
+
+  function errorHTML(e) {
+    return '<div class="msg msg-err">Error de conexión: ' + (e && e.message ? e.message : e) + '</div>';
   }
 
   // ---------- Google Sign-In ----------
@@ -310,8 +366,8 @@
           $('userLabel').textContent = r.email;
           $('cntHoy').textContent = r.hoy;
           $('loginMsg').innerHTML = '';
-          hide('stepLogin'); show('app'); show('navBar');
-          focoScan();
+          hide('stepLogin'); show('shell');
+          switchSec('dashboard'); // la app arranca en el Dashboard
         } else {
           idToken = '';
           $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
@@ -320,21 +376,20 @@
       })
       .catch(function (e) {
         idToken = '';
-        $('loginMsg').innerHTML = '<div class="msg msg-err">Error de conexión con el servidor.<br>' + e.message + '</div>';
+        $('loginMsg').innerHTML = errorHTML(e);
       });
   }
 
   function sesionVencida() {
     idToken = '';
-    resetScan();
-    hide('app'); hide('navBar'); show('stepLogin');
+    hide('shell'); show('stepLogin');
     $('loginMsg').innerHTML = '<div class="msg msg-warn">Tu sesión venció. Volvé a ingresar.</div>';
     try { google.accounts.id.prompt(); } catch (e) {}
   }
 
   // ---------- navegación ----------
   function switchSec(sec) {
-    ['escaneo', 'dashboard', 'cps', 'tarifas'].forEach(function (s) {
+    ['dashboard', 'escaneo', 'cps', 'tarifas'].forEach(function (s) {
       $('sec-' + s).classList.toggle('hidden', s !== sec);
       $('nav-' + s).classList.toggle('on', s === sec);
     });
@@ -351,20 +406,15 @@
     }
   }
 
-  // La pistola escribe el contenido del QR (JSON de ML) y manda Enter al final.
   function extraerEnvio(text) {
     text = String(text || '').trim();
-    // 1) JSON completo de Mercado Libre Flex
     try {
       var o = JSON.parse(text);
       if (o && o.id) return String(o.id).replace(/\D/g, '');
     } catch (e) {}
-    // 2) "id": 47492195100 aunque el JSON venga deformado por el lector
     var m = text.match(/id\D{0,4}(\d{8,})/i);
     if (m) return m[1];
-    // 3) número solo (tipeo manual o QR simple)
     if (/^\d{8,}$/.test(text)) return text;
-    // 4) primera tira larga de dígitos que aparezca
     var d = text.match(/\d{8,}/);
     if (d) return d[0];
     return null;
@@ -376,7 +426,7 @@
     var id = extraerEnvio(raw);
     $('inpScan').value = '';
     if (!id) {
-      $('scanMsg').innerHTML = '<div class="msg msg-err">No pude extraer el número de envío de esa lectura. Probá de nuevo.</div>';
+      $('scanMsg').innerHTML = '<div class="msg msg-err">No pude extraer el número de envío. Probá de nuevo.</div>';
       beep(220, 300);
       focoScan();
       return;
@@ -393,8 +443,15 @@
     matanza = ''; cordonManual = '';
     $('inpCP').value = ''; $('inpCP').disabled = false;
     $('matN').classList.remove('on'); $('matS').classList.remove('on');
-    hide('cordonBox'); setMsg('', '');
+    ocultarCordonBox();
+    setMsg('', '');
     setTimeout(function () { $('inpCP').focus(); }, 120);
+  }
+
+  function ocultarCordonBox() {
+    hide('cordonBox');
+    cordonManual = '';
+    document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
   }
 
   function toggleMatanza(cual) {
@@ -402,12 +459,12 @@
     $('matN').classList.toggle('on', matanza === 'NORTE');
     $('matS').classList.toggle('on', matanza === 'SUR');
     $('inpCP').disabled = !!matanza;
-    if (matanza) { $('inpCP').value = ''; hide('cordonBox'); cordonManual = ''; setMsg('', ''); }
+    if (matanza) { $('inpCP').value = ''; ocultarCordonBox(); setMsg('', ''); }
   }
 
   function pickCordon(z, btn) {
     cordonManual = z;
-    document.querySelectorAll('#cordonBox .cord-btn').forEach(function (b) { b.classList.remove('on'); });
+    document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
     btn.classList.add('on');
   }
 
@@ -431,8 +488,7 @@
       cordonManual: cordonManual
     }).then(onRespRegistro).catch(function (e) {
       saving = false; $('btnConfirm').disabled = false;
-      if (e.message !== 'Sesión vencida') setMsg('Error de conexión: ' + e.message + '<br>Reintentá.', 'msg-err');
-      beep(220, 300);
+      if (e.message !== 'SESION') { setMsg('Error de conexión: ' + e.message + '. Reintentá.', 'msg-err'); beep(220, 300); }
     });
   }
 
@@ -445,7 +501,7 @@
       $('cntHoy').textContent = r.hoy;
       $('okDetail').textContent = 'Envío ' + r.envioId + ' • ' + r.cp + ' • Zona ' + r.zona + ' • ' + money(r.costo);
       hide('stepCP'); show('stepOK');
-      dashCache = null; // invalidar dashboard
+      dashCache = null;
       setTimeout(resetScan, 1300);
 
     } else if (r.status === 'DUPLICADO') {
@@ -454,9 +510,13 @@
 
     } else if (r.status === 'CP_DESCONOCIDO') {
       beep(440, 200);
-      $('cpDesc').textContent = r.cp;
+      if (r.base === 0) {
+        $('cpDescMsg').innerHTML = '⚠️ <b>La base de CPs está VACÍA.</b> Importá el archivo Config_CPs.csv en la pestaña Config_CPs del Sheet. Mientras tanto podés elegir el cordón a mano:';
+      } else {
+        $('cpDescMsg').innerHTML = '⚠️ El CP <b>' + r.cp + '</b> no está en la base (' + r.base + ' CPs cargados).<br>Corregí el CP de arriba, o elegí el cordón para agregarlo:';
+      }
       cordonManual = '';
-      document.querySelectorAll('#cordonBox .cord-btn').forEach(function (b) { b.classList.remove('on'); });
+      document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
       show('cordonBox'); setMsg('', '');
 
     } else {
@@ -468,14 +528,13 @@
   function resetScan() {
     envioId = ''; matanza = ''; cordonManual = '';
     hide('stepCP'); hide('stepOK'); show('stepScan');
+    ocultarCordonBox();
     setMsg('', '');
     $('scanMsg').innerHTML = '';
     focoScan();
   }
 
   // ================== DASHBOARD ==================
-  var dashCache = null;
-
   function loadDashboard(force) {
     if (dashCache && !force) { renderDashboard(dashCache); return; }
     $('tblQuincenas').innerHTML = 'Cargando…';
@@ -485,13 +544,17 @@
       if (r.status !== 'OK') { $('tblQuincenas').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>'; return; }
       dashCache = r;
       renderDashboard(r);
-    }).catch(function () {});
+    }).catch(function (e) {
+      if (e.message !== 'SESION') $('tblQuincenas').innerHTML = errorHTML(e);
+    });
   }
 
   function renderDashboard(d) {
+    $('dQuinAct').textContent = d.quincenaActual || '–';
     $('dHoyCant').textContent = d.hoy.cant;
     $('dHoyTotal').textContent = money(d.hoy.total);
     $('dTotalReg').textContent = d.totalRegistros;
+    $('dTotalCPs').textContent = d.totalCPs;
     $('tblQuincenas').innerHTML = tablaPeriodos(d.quincenas, 'Quincena');
     $('tblSemanas').innerHTML = tablaPeriodos(d.semanas, 'Semana');
     $('tblUltimos').innerHTML = tablaUltimos(d.ultimos);
@@ -539,10 +602,13 @@
           (r.localidad ? '<br><span style="font-weight:400">' + r.localidad + '</span>' : '') +
           (r.notas ? '<br><span style="font-weight:400;font-size:12px">' + r.notas + '</span>' : '') + '</div>';
       } else {
-        $('resBuscar').innerHTML = '<div class="msg msg-warn">El CP <b>' + r.cp + '</b> no está en la base. Podés agregarlo abajo.</div>';
+        var extra = (r.base === 0) ? '<br><b>La base está vacía: importá Config_CPs.csv en el Sheet.</b>' : '';
+        $('resBuscar').innerHTML = '<div class="msg msg-warn">El CP <b>' + r.cp + '</b> no está en la base.' + extra + '</div>';
         $('inpNuevoCP').value = r.cp;
       }
-    }).catch(function () {});
+    }).catch(function (e) {
+      if (e.message !== 'SESION') $('resBuscar').innerHTML = errorHTML(e);
+    });
   }
 
   function pickCordonNuevo(z, btn) {
@@ -562,20 +628,27 @@
         $('inpNuevoCP').value = '';
         cordonNuevo = '';
         document.querySelectorAll('.cord-btn.cp-new').forEach(function (b) { b.classList.remove('on'); });
+        dashCache = null;
       } else {
         $('msgNuevoCP').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
       }
-    }).catch(function () {});
+    }).catch(function (e) {
+      if (e.message !== 'SESION') $('msgNuevoCP').innerHTML = errorHTML(e);
+    });
   }
 
   // ================== SECCIÓN TARIFAS ==================
   function loadTarifas() {
+    var aplicar = function (t) {
+      ['CABA', 'C1', 'C2', 'C3'].forEach(function (z) {
+        if (t[z] !== undefined) $('t' + z).value = t[z];
+      });
+    };
+    if (dashCache) { aplicar(dashCache.tarifas); return; }
     api('dashboard').then(function (r) {
       if (r.status !== 'OK') return;
       dashCache = r;
-      ['CABA', 'C1', 'C2', 'C3'].forEach(function (z) {
-        if (r.tarifas[z] !== undefined) $('t' + z).value = r.tarifas[z];
-      });
+      aplicar(r.tarifas);
     }).catch(function () {});
   }
 
@@ -590,24 +663,30 @@
       } else {
         $('msgTarifas').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
       }
-    }).catch(function () {});
+    }).catch(function (e) {
+      if (e.message !== 'SESION') $('msgTarifas').innerHTML = errorHTML(e);
+    });
   }
 
   // ================== eventos ==================
   document.addEventListener('DOMContentLoaded', function () {
-    // La pistola termina con Enter; también sirve para tipeo manual
     $('inpScan').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); procesarLectura(); }
     });
-    // Por si el lector no manda Enter: procesar cuando deja de escribir
+    // Por si la pistola no manda Enter: procesar cuando deja de escribir
     var scanTimer = null;
     $('inpScan').addEventListener('input', function () {
       clearTimeout(scanTimer);
-      var v = $('inpScan').value;
-      if (v.length > 10) scanTimer = setTimeout(procesarLectura, 300);
+      if ($('inpScan').value.length > 10) scanTimer = setTimeout(procesarLectura, 300);
     });
     $('inpCP').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+    });
+    // FIX: si el operario corrige el CP después del aviso "CP desconocido",
+    // se limpia el selector de cordón y puede confirmar con el CP nuevo.
+    $('inpCP').addEventListener('input', function () {
+      if (!$('cordonBox').classList.contains('hidden')) ocultarCordonBox();
+      setMsg('', '');
     });
     $('inpBuscarCP').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); buscarCP(); }
