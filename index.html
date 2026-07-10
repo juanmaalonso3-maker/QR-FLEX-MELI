@@ -191,7 +191,8 @@
         hide('stepLogin'); show('app');
       } else {
         idToken = '';
-        $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ Cuenta no autorizada.<br>Usá tu cuenta @bitek.com.ar.</div>';
+        $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
+          (r.msg ? r.msg : 'Cuenta no autorizada. Usá tu cuenta @bitek.com.ar.') + '</div>';
       }
     }).catch(function (e) {
       idToken = '';
