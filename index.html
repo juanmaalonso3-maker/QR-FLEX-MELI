@@ -2,64 +2,102 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Control Envíos Flex</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
+    :root {
+      --azul: #1a73e8; --azul-osc: #174ea6; --verde: #188038; --rojo: #c5221f;
+      --naranja: #e8710a; --gris: #5f6368; --borde: #dadce0; --fondo: #f1f3f4;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, Roboto, 'Segoe UI', sans-serif; background: #f1f3f4; min-height: 100vh; }
-    .top { background: #1a73e8; color: #fff; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
-    .top .title { font-weight: 700; font-size: 16px; }
-    .top .user { font-size: 11px; opacity: .85; text-align: right; }
-    .wrap { max-width: 480px; margin: 0 auto; padding: 14px; }
-    .card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.12); margin-bottom: 14px; }
+    body { font-family: -apple-system, Roboto, 'Segoe UI', sans-serif; background: var(--fondo); min-height: 100vh; padding-bottom: 76px; }
 
-    .btn { display: block; width: 100%; border: none; border-radius: 12px; padding: 18px; font-size: 19px;
+    .top { background: var(--azul); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+           position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+    .top .title { font-weight: 700; font-size: 17px; }
+    .top .user { font-size: 11px; opacity: .9; text-align: right; }
+
+    .wrap { max-width: 760px; margin: 0 auto; padding: 14px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.10); margin-bottom: 14px; }
+    h2.sec-title { font-size: 15px; color: var(--gris); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+
+    .btn { display: block; width: 100%; border: none; border-radius: 12px; padding: 16px; font-size: 18px;
            font-weight: 700; cursor: pointer; transition: opacity .15s; }
     .btn:active { opacity: .7; }
     .btn:disabled { opacity: .4; }
-    .btn-primary { background: #1a73e8; color: #fff; }
-    .btn-green { background: #188038; color: #fff; }
+    .btn-primary { background: var(--azul); color: #fff; }
+    .btn-green { background: var(--verde); color: #fff; }
     .btn-gray { background: #e8eaed; color: #3c4043; font-size: 15px; padding: 12px; }
+    .btn-sm { padding: 10px 14px; font-size: 14px; width: auto; display: inline-block; }
 
-    #reader { width: 100%; border-radius: 12px; overflow: hidden; }
+    input.field { width: 100%; font-size: 17px; padding: 13px; border: 2px solid var(--borde); border-radius: 10px; }
+    input.field:focus { border-color: var(--azul); outline: none; }
+    input.big { font-size: 26px; font-weight: 700; text-align: center; letter-spacing: 2px; }
+    input.field:disabled { background: var(--fondo); color: #9aa0a6; }
+    label.fld { display: block; font-size: 13px; font-weight: 600; color: var(--gris); margin: 12px 0 6px; }
 
-    .envio-badge { background: #e6f4ea; border: 2px solid #188038; color: #188038; border-radius: 10px;
-                   padding: 10px; text-align: center; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin-bottom: 14px; }
-    label.fld { display: block; font-size: 13px; font-weight: 600; color: #5f6368; margin: 10px 0 6px; }
-    input.cp { width: 100%; font-size: 28px; font-weight: 700; text-align: center; padding: 12px;
-               border: 2px solid #dadce0; border-radius: 10px; letter-spacing: 3px; }
-    input.cp:focus { border-color: #1a73e8; outline: none; }
-    input.cp:disabled { background: #f1f3f4; color: #9aa0a6; }
+    .envio-badge { background: #e6f4ea; border: 2px solid var(--verde); color: var(--verde); border-radius: 10px;
+                   padding: 10px; text-align: center; font-size: 19px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
 
     .matanza { display: flex; gap: 10px; margin: 12px 0; }
-    .mat-btn { flex: 1; padding: 14px 6px; border: 2px solid #dadce0; border-radius: 10px; background: #fff;
-               font-size: 15px; font-weight: 700; color: #5f6368; cursor: pointer; }
-    .mat-btn.on { border-color: #e8710a; background: #fef7e0; color: #e8710a; }
+    .mat-btn { flex: 1; padding: 13px 6px; border: 2px solid var(--borde); border-radius: 10px; background: #fff;
+               font-size: 14px; font-weight: 700; color: var(--gris); cursor: pointer; }
+    .mat-btn.on { border-color: var(--naranja); background: #fef7e0; color: var(--naranja); }
 
-    .cordones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
-    .cord-btn { padding: 16px; border: 2px solid #dadce0; border-radius: 10px; background: #fff;
-                font-size: 17px; font-weight: 800; cursor: pointer; }
-    .cord-btn.on { border-color: #1a73e8; background: #e8f0fe; color: #1a73e8; }
+    .cordones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .cord-btn { padding: 13px 4px; border: 2px solid var(--borde); border-radius: 10px; background: #fff;
+                font-size: 15px; font-weight: 800; cursor: pointer; }
+    .cord-btn.on { border-color: var(--azul); background: #e8f0fe; color: var(--azul); }
 
-    .msg { border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; margin-bottom: 12px; text-align: center; }
-    .msg-ok { background: #e6f4ea; color: #188038; }
-    .msg-err { background: #fce8e6; color: #c5221f; }
+    .msg { border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 600; margin: 10px 0; text-align: center; }
+    .msg-ok { background: #e6f4ea; color: var(--verde); }
+    .msg-err { background: #fce8e6; color: var(--rojo); }
     .msg-warn { background: #fef7e0; color: #b05a00; }
 
-    .counter { text-align: center; color: #5f6368; font-size: 13px; padding-bottom: 20px; }
-    .counter b { color: #1a73e8; font-size: 16px; }
     .hidden { display: none !important; }
-    .manual-link { text-align: center; margin-top: 12px; }
-    .manual-link a { color: #1a73e8; font-size: 14px; text-decoration: none; font-weight: 600; }
-    .big-ok { text-align: center; padding: 30px 10px; }
-    .big-ok .check { font-size: 64px; }
-    .big-ok .det { font-size: 15px; color: #5f6368; margin-top: 8px; }
-    .login-box { text-align: center; padding: 20px 0; }
+
+    /* Navegación inferior */
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; z-index: 20;
+           border-top: 1px solid var(--borde); box-shadow: 0 -2px 8px rgba(0,0,0,.06); }
+    .nav button { flex: 1; border: none; background: none; padding: 9px 4px 11px; font-size: 11px; font-weight: 600;
+                  color: var(--gris); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .nav button .ico { font-size: 21px; }
+    .nav button.on { color: var(--azul); }
+    .nav button.on .ico { transform: scale(1.1); }
+
+    /* Dashboard */
+    .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+    .stat { background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.10); }
+    .stat .num { font-size: 20px; font-weight: 800; color: var(--azul); }
+    .stat .lbl { font-size: 11px; color: var(--gris); margin-top: 3px; }
+
+    .tbl-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; white-space: nowrap; }
+    th { background: #e8f0fe; color: var(--azul-osc); padding: 8px; text-align: left; font-size: 12px; }
+    td { padding: 8px; border-bottom: 1px solid #eee; }
+    tr.total td { font-weight: 800; background: #fef7e0; }
+    td.money, th.money { text-align: right; }
+    .zona-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .z-CABA { background: #e8f0fe; color: var(--azul); }
+    .z-C1 { background: #e6f4ea; color: var(--verde); }
+    .z-C2 { background: #fef7e0; color: var(--naranja); }
+    .z-C3 { background: #fce8e6; color: var(--rojo); }
+    .z-OTRA { background: #eee; color: var(--gris); }
+
+    .counter { text-align: center; color: var(--gris); font-size: 13px; padding: 6px 0 14px; }
+    .counter b { color: var(--azul); font-size: 16px; }
+    .login-box { text-align: center; padding: 26px 0; }
     .login-box .icon { font-size: 48px; margin-bottom: 10px; }
-    .login-box p { color: #5f6368; font-size: 14px; margin-bottom: 18px; }
+    .login-box p { color: var(--gris); font-size: 14px; margin-bottom: 18px; }
     #gsiBtn { display: flex; justify-content: center; }
+    .refresh-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .hint { font-size: 12px; color: var(--gris); margin-top: 8px; text-align: center; }
+    .tarifa-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .tarifa-row .zn { width: 60px; font-weight: 800; }
+    .big-ok { text-align: center; padding: 26px 10px; }
+    .big-ok .check { font-size: 60px; }
+    .big-ok .det { font-size: 15px; color: var(--gris); margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -70,68 +108,145 @@
 
   <div class="wrap">
 
-    <!-- LOGIN -->
+    <!-- ============ LOGIN ============ -->
     <div id="stepLogin" class="card">
       <div class="login-box">
         <div class="icon">🔐</div>
-        <p>Ingresá con tu cuenta <b>@bitek.com.ar</b><br>para registrar envíos.</p>
+        <p>Ingresá con tu cuenta <b>@bitek.com.ar</b><br>para usar el sistema.</p>
         <div id="gsiBtn"></div>
         <div id="loginMsg"></div>
       </div>
     </div>
 
-    <!-- APP -->
+    <!-- ============ APP ============ -->
     <div id="app" class="hidden">
 
-      <!-- PASO 1: escanear -->
-      <div id="stepScan" class="card">
-        <button class="btn btn-primary" id="btnScan" onclick="startScan()">📷 ESCANEAR QR</button>
-        <div id="reader" class="hidden" style="margin-top:12px"></div>
-        <button class="btn btn-gray hidden" id="btnCancelScan" onclick="stopScan()" style="margin-top:10px">Cancelar</button>
-        <div class="manual-link"><a href="#" onclick="manualEnvio(); return false;">Ingresar N° de envío a mano</a></div>
-      </div>
-
-      <!-- PASO 2: CP / Matanza -->
-      <div id="stepCP" class="card hidden">
-        <div class="envio-badge">Envío: <span id="envioShow"></span></div>
-
-        <label class="fld">Código Postal de destino</label>
-        <input class="cp" id="inpCP" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____"
-               autocomplete="off">
-
-        <div class="matanza">
-          <button class="mat-btn" id="matN" onclick="toggleMatanza('NORTE')">La Matanza<br>NORTE</button>
-          <button class="mat-btn" id="matS" onclick="toggleMatanza('SUR')">La Matanza<br>SUR</button>
+      <!-- ========== SECCIÓN ESCANEO ========== -->
+      <div id="sec-escaneo" class="sec">
+        <div id="stepScan" class="card">
+          <h2 class="sec-title">📷 Escaneo de etiqueta</h2>
+          <label class="fld">Escaneá el QR con la pistola (o escribí el N° de envío)</label>
+          <input class="field big" id="inpScan" type="text" placeholder="Esperando lectura…" autocomplete="off" autofocus>
+          <div id="scanMsg"></div>
+          <div class="hint">El lector escribe acá automáticamente. Si tipeás a mano, poné el número de envío y apretá Enter.</div>
         </div>
 
-        <!-- Selector de cordón para CP desconocido -->
-        <div id="cordonBox" class="hidden">
-          <div class="msg msg-warn">⚠️ El CP <b id="cpDesc"></b> no está en la base.<br>Elegí el cordón para agregarlo:</div>
-          <div class="cordones">
-            <button class="cord-btn" onclick="pickCordon('CABA', this)">CABA</button>
-            <button class="cord-btn" onclick="pickCordon('C1', this)">C1</button>
-            <button class="cord-btn" onclick="pickCordon('C2', this)">C2</button>
-            <button class="cord-btn" onclick="pickCordon('C3', this)">C3</button>
+        <div id="stepCP" class="card hidden">
+          <div class="envio-badge">Envío: <span id="envioShow"></span></div>
+
+          <label class="fld">Código Postal de destino</label>
+          <input class="field big" id="inpCP" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" autocomplete="off">
+
+          <div class="matanza">
+            <button class="mat-btn" id="matN" onclick="toggleMatanza('NORTE')">La Matanza NORTE</button>
+            <button class="mat-btn" id="matS" onclick="toggleMatanza('SUR')">La Matanza SUR</button>
+          </div>
+
+          <div id="cordonBox" class="hidden">
+            <div class="msg msg-warn">⚠️ El CP <b id="cpDesc"></b> no está en la base.<br>Elegí el cordón para agregarlo:</div>
+            <div class="cordones">
+              <button class="cord-btn" onclick="pickCordon('CABA', this)">CABA</button>
+              <button class="cord-btn" onclick="pickCordon('C1', this)">C1</button>
+              <button class="cord-btn" onclick="pickCordon('C2', this)">C2</button>
+              <button class="cord-btn" onclick="pickCordon('C3', this)">C3</button>
+            </div>
+          </div>
+
+          <div id="msgBox"></div>
+
+          <button class="btn btn-green" id="btnConfirm" onclick="confirmar()" style="margin-top:6px">✅ CONFIRMAR</button>
+          <button class="btn btn-gray" onclick="resetScan()" style="margin-top:10px">Cancelar</button>
+        </div>
+
+        <div id="stepOK" class="card hidden">
+          <div class="big-ok">
+            <div class="check">✅</div>
+            <div style="font-size:20px;font-weight:800;color:var(--verde)">¡Registrado!</div>
+            <div class="det" id="okDetail"></div>
           </div>
         </div>
 
-        <div id="msgBox"></div>
-
-        <button class="btn btn-green" id="btnConfirm" onclick="confirmar()" style="margin-top:6px">✅ CONFIRMAR</button>
-        <button class="btn btn-gray" onclick="resetAll()" style="margin-top:10px">Cancelar</button>
+        <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b></div>
       </div>
 
-      <!-- PASO 3: OK -->
-      <div id="stepOK" class="card hidden">
-        <div class="big-ok">
-          <div class="check">✅</div>
-          <div style="font-size:20px;font-weight:800;color:#188038">¡Registrado!</div>
-          <div class="det" id="okDetail"></div>
+      <!-- ========== SECCIÓN DASHBOARD ========== -->
+      <div id="sec-dashboard" class="sec hidden">
+        <div class="cards3">
+          <div class="stat"><div class="num" id="dHoyCant">–</div><div class="lbl">Envíos hoy</div></div>
+          <div class="stat"><div class="num" id="dHoyTotal">–</div><div class="lbl">Gasto hoy</div></div>
+          <div class="stat"><div class="num" id="dTotalReg">–</div><div class="lbl">Total registros</div></div>
+        </div>
+
+        <div class="card">
+          <div class="refresh-row">
+            <h2 class="sec-title" style="margin:0">💰 Gastos por quincena</h2>
+            <button class="btn btn-gray btn-sm" onclick="loadDashboard(true)">🔄 Actualizar</button>
+          </div>
+          <div class="tbl-wrap" id="tblQuincenas">Cargando…</div>
+        </div>
+
+        <div class="card">
+          <h2 class="sec-title">📅 Gastos por semana (Lun a Sáb)</h2>
+          <div class="tbl-wrap" id="tblSemanas">Cargando…</div>
+        </div>
+
+        <div class="card">
+          <h2 class="sec-title">🕐 Últimos registros</h2>
+          <div class="tbl-wrap" id="tblUltimos">Cargando…</div>
         </div>
       </div>
 
-      <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b></div>
+      <!-- ========== SECCIÓN CPs ========== -->
+      <div id="sec-cps" class="sec hidden">
+        <div class="card">
+          <h2 class="sec-title">🔍 Buscar Código Postal</h2>
+          <div style="display:flex; gap:10px">
+            <input class="field big" id="inpBuscarCP" type="text" inputmode="numeric" maxlength="4" placeholder="CP" style="flex:1">
+            <button class="btn btn-primary btn-sm" onclick="buscarCP()" style="padding:0 22px">Buscar</button>
+          </div>
+          <div id="resBuscar"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="sec-title">➕ Agregar o corregir CP</h2>
+          <label class="fld">Código Postal</label>
+          <input class="field big" id="inpNuevoCP" type="text" inputmode="numeric" maxlength="4" placeholder="____">
+          <label class="fld">Cordón</label>
+          <div class="cordones">
+            <button class="cord-btn cp-new" onclick="pickCordonNuevo('CABA', this)">CABA</button>
+            <button class="cord-btn cp-new" onclick="pickCordonNuevo('C1', this)">C1</button>
+            <button class="cord-btn cp-new" onclick="pickCordonNuevo('C2', this)">C2</button>
+            <button class="cord-btn cp-new" onclick="pickCordonNuevo('C3', this)">C3</button>
+          </div>
+          <div id="msgNuevoCP"></div>
+          <button class="btn btn-green" onclick="guardarCP()">💾 Guardar CP</button>
+          <div class="hint">Si el CP ya existe, se actualiza su cordón. Todo cambio queda registrado en Log_Errores.</div>
+        </div>
+      </div>
+
+      <!-- ========== SECCIÓN TARIFAS ========== -->
+      <div id="sec-tarifas" class="sec hidden">
+        <div class="card">
+          <h2 class="sec-title">💲 Tarifas por cordón</h2>
+          <div class="tarifa-row"><span class="zn zona-pill z-CABA">CABA</span><input class="field" id="tCABA" type="number" min="0"></div>
+          <div class="tarifa-row"><span class="zn zona-pill z-C1">C1</span><input class="field" id="tC1" type="number" min="0"></div>
+          <div class="tarifa-row"><span class="zn zona-pill z-C2">C2</span><input class="field" id="tC2" type="number" min="0"></div>
+          <div class="tarifa-row"><span class="zn zona-pill z-C3">C3</span><input class="field" id="tC3" type="number" min="0"></div>
+          <div id="msgTarifas"></div>
+          <button class="btn btn-green" onclick="guardarTarifas()">💾 Guardar tarifas</button>
+          <div class="hint">Los cambios aplican a los escaneos futuros. Los registros históricos conservan el costo del momento del escaneo.</div>
+        </div>
+      </div>
+
     </div>
+  </div>
+
+  <!-- Navegación inferior -->
+  <div class="nav hidden" id="navBar">
+    <button id="nav-escaneo" class="on" onclick="switchSec('escaneo')"><span class="ico">📷</span>Escaneo</button>
+    <button id="nav-dashboard" onclick="switchSec('dashboard')"><span class="ico">📊</span>Dashboard</button>
+    <button id="nav-cps" onclick="switchSec('cps')"><span class="ico">📮</span>CPs</button>
+    <button id="nav-tarifas" onclick="switchSec('tarifas')"><span class="ico">💲</span>Tarifas</button>
   </div>
 
 <script>
@@ -141,17 +256,20 @@
   // ====================================================
 
   var idToken = '';
-  var scanner = null;
   var envioId = '';
   var matanza = '';
   var cordonManual = '';
+  var cordonNuevo = '';
   var saving = false;
+  var secActual = 'escaneo';
 
   // ---------- utilidades ----------
   function $(id) { return document.getElementById(id); }
   function show(id) { $(id).classList.remove('hidden'); }
   function hide(id) { $(id).classList.add('hidden'); }
   function setMsg(html, cls) { $('msgBox').innerHTML = html ? '<div class="msg ' + cls + '">' + html + '</div>' : ''; }
+  function money(n) { return '$' + Number(n || 0).toLocaleString('es-AR'); }
+  function pill(z) { return '<span class="zona-pill z-' + z + '">' + z + '</span>'; }
 
   function beep(freq, dur) {
     try {
@@ -163,13 +281,15 @@
     } catch (e) {}
   }
 
-  // ---------- API (fetch al Apps Script) ----------
+  // ---------- API ----------
   function api(action, payload) {
     return fetch(API_URL, {
       method: 'POST',
       body: JSON.stringify({ token: idToken, action: action, payload: payload || {} })
-      // sin headers: el content-type text/plain evita el preflight CORS
-    }).then(function (r) { return r.json(); });
+    }).then(function (r) { return r.json(); }).then(function (r) {
+      if (r && r.status === 'NO_AUTH') { sesionVencida(); throw new Error('Sesión vencida'); }
+      return r;
+    });
   }
 
   // ---------- Google Sign-In ----------
@@ -177,84 +297,92 @@
     if (!window.google || !google.accounts) { setTimeout(initGsi, 200); return; }
     google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onCredential, auto_select: true });
     google.accounts.id.renderButton($('gsiBtn'), { theme: 'filled_blue', size: 'large', text: 'signin_with', width: 280 });
-    google.accounts.id.prompt(); // one-tap si ya inició sesión antes
+    google.accounts.id.prompt();
   });
 
   function onCredential(resp) {
     idToken = resp.credential;
     $('loginMsg').innerHTML = '<div class="msg msg-warn">Verificando…</div>';
-    api('estado').then(function (r) {
-      if (r.status === 'OK') {
-        $('userLabel').textContent = r.email;
-        $('cntHoy').textContent = r.hoy;
-        $('loginMsg').innerHTML = '';
-        hide('stepLogin'); show('app');
-      } else {
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ token: idToken, action: 'estado', payload: {} }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r.status === 'OK') {
+          $('userLabel').textContent = r.email;
+          $('cntHoy').textContent = r.hoy;
+          $('loginMsg').innerHTML = '';
+          hide('stepLogin'); show('app'); show('navBar');
+          focoScan();
+        } else {
+          idToken = '';
+          $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
+            (r.msg ? r.msg : 'Cuenta no autorizada. Usá tu cuenta @bitek.com.ar.') + '</div>';
+        }
+      })
+      .catch(function (e) {
         idToken = '';
-        $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
-          (r.msg ? r.msg : 'Cuenta no autorizada. Usá tu cuenta @bitek.com.ar.') + '</div>';
-      }
-    }).catch(function (e) {
-      idToken = '';
-      $('loginMsg').innerHTML = '<div class="msg msg-err">Error de conexión con el servidor.<br>' + e.message + '</div>';
-    });
+        $('loginMsg').innerHTML = '<div class="msg msg-err">Error de conexión con el servidor.<br>' + e.message + '</div>';
+      });
   }
 
   function sesionVencida() {
     idToken = '';
-    resetAll();
-    hide('app'); show('stepLogin');
+    resetScan();
+    hide('app'); hide('navBar'); show('stepLogin');
     $('loginMsg').innerHTML = '<div class="msg msg-warn">Tu sesión venció. Volvé a ingresar.</div>';
     try { google.accounts.id.prompt(); } catch (e) {}
   }
 
-  // ---------- extracción del N° de envío del QR ----------
+  // ---------- navegación ----------
+  function switchSec(sec) {
+    ['escaneo', 'dashboard', 'cps', 'tarifas'].forEach(function (s) {
+      $('sec-' + s).classList.toggle('hidden', s !== sec);
+      $('nav-' + s).classList.toggle('on', s === sec);
+    });
+    secActual = sec;
+    if (sec === 'dashboard') loadDashboard(false);
+    if (sec === 'tarifas') loadTarifas();
+    if (sec === 'escaneo') focoScan();
+  }
+
+  // ================== ESCANEO (pistola lectora / manual) ==================
+  function focoScan() {
+    if (secActual === 'escaneo' && !$('stepScan').classList.contains('hidden')) {
+      setTimeout(function () { $('inpScan').focus(); }, 100);
+    }
+  }
+
+  // La pistola escribe el contenido del QR (JSON de ML) y manda Enter al final.
   function extraerEnvio(text) {
     text = String(text || '').trim();
-    // 1) JSON de Mercado Libre Flex: {"id":47492195100,"sender_id":...,"hash_code":"...","security_digit":...}
+    // 1) JSON completo de Mercado Libre Flex
     try {
       var o = JSON.parse(text);
       if (o && o.id) return String(o.id).replace(/\D/g, '');
     } catch (e) {}
-    // 2) regex por si el JSON viene malformado
-    var m = text.match(/"id"\s*:\s*"?(\d{8,})/);
+    // 2) "id": 47492195100 aunque el JSON venga deformado por el lector
+    var m = text.match(/id\D{0,4}(\d{8,})/i);
     if (m) return m[1];
-    // 3) QR que es solo un número
+    // 3) número solo (tipeo manual o QR simple)
     if (/^\d{8,}$/.test(text)) return text;
+    // 4) primera tira larga de dígitos que aparezca
+    var d = text.match(/\d{8,}/);
+    if (d) return d[0];
     return null;
   }
 
-  // ---------- escaneo ----------
-  function startScan() {
-    hide('btnScan'); show('reader'); show('btnCancelScan');
-    scanner = new Html5Qrcode('reader');
-    scanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 230, height: 230 } },
-      function (decodedText) {
-        var id = extraerEnvio(decodedText);
-        if (!id) { setMsg('QR leído pero no parece una etiqueta Flex. Probá de nuevo.', 'msg-err'); return; }
-        beep(880, 120);
-        stopScan();
-        gotEnvio(id);
-      },
-      function () { /* frames sin QR: ignorar */ }
-    ).catch(function (err) {
-      stopScan();
-      alert('No se pudo abrir la cámara.\n\nSi el navegador no pide permiso, abrí esta página directamente en Chrome (no dentro de otra app) y verificá los permisos de cámara.\n\nDetalle: ' + err);
-    });
-  }
-
-  function stopScan() {
-    if (scanner) { try { scanner.stop().then(function(){ scanner.clear(); }); } catch (e) {} scanner = null; }
-    hide('reader'); hide('btnCancelScan'); show('btnScan');
-  }
-
-  function manualEnvio() {
-    var v = prompt('Ingresá el número de envío (el que figura como "Envio" en la etiqueta):');
-    if (!v) return;
-    var id = String(v).replace(/\D/g, '');
-    if (id.length < 8) { alert('Número inválido.'); return; }
+  function procesarLectura() {
+    var raw = $('inpScan').value;
+    if (!raw.trim()) return;
+    var id = extraerEnvio(raw);
+    $('inpScan').value = '';
+    if (!id) {
+      $('scanMsg').innerHTML = '<div class="msg msg-err">No pude extraer el número de envío de esa lectura. Probá de nuevo.</div>';
+      beep(220, 300);
+      focoScan();
+      return;
+    }
+    $('scanMsg').innerHTML = '';
+    beep(880, 120);
     gotEnvio(id);
   }
 
@@ -266,10 +394,9 @@
     $('inpCP').value = ''; $('inpCP').disabled = false;
     $('matN').classList.remove('on'); $('matS').classList.remove('on');
     hide('cordonBox'); setMsg('', '');
-    setTimeout(function () { $('inpCP').focus(); }, 150);
+    setTimeout(function () { $('inpCP').focus(); }, 120);
   }
 
-  // ---------- Matanza ----------
   function toggleMatanza(cual) {
     matanza = (matanza === cual) ? '' : cual;
     $('matN').classList.toggle('on', matanza === 'NORTE');
@@ -278,15 +405,12 @@
     if (matanza) { $('inpCP').value = ''; hide('cordonBox'); cordonManual = ''; setMsg('', ''); }
   }
 
-  // ---------- CP desconocido: elegir cordón ----------
   function pickCordon(z, btn) {
     cordonManual = z;
-    var btns = document.querySelectorAll('.cord-btn');
-    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+    document.querySelectorAll('#cordonBox .cord-btn').forEach(function (b) { b.classList.remove('on'); });
     btn.classList.add('on');
   }
 
-  // ---------- confirmar ----------
   function confirmar() {
     if (saving) return;
     if (!matanza) {
@@ -305,23 +429,24 @@
       cp: $('inpCP').value,
       matanza: matanza,
       cordonManual: cordonManual
-    }).then(onResp).catch(function (e) {
+    }).then(onRespRegistro).catch(function (e) {
       saving = false; $('btnConfirm').disabled = false;
-      setMsg('Error de conexión: ' + e.message + '<br>Reintentá.', 'msg-err');
+      if (e.message !== 'Sesión vencida') setMsg('Error de conexión: ' + e.message + '<br>Reintentá.', 'msg-err');
       beep(220, 300);
     });
   }
 
-  function onResp(r) {
+  function onRespRegistro(r) {
     saving = false;
     $('btnConfirm').disabled = false;
 
     if (r.status === 'OK') {
       beep(1320, 150);
       $('cntHoy').textContent = r.hoy;
-      $('okDetail').textContent = 'Envío ' + r.envioId + ' • ' + r.cp + ' • Zona ' + r.zona;
+      $('okDetail').textContent = 'Envío ' + r.envioId + ' • ' + r.cp + ' • Zona ' + r.zona + ' • ' + money(r.costo);
       hide('stepCP'); show('stepOK');
-      setTimeout(resetAll, 1400);
+      dashCache = null; // invalidar dashboard
+      setTimeout(resetScan, 1300);
 
     } else if (r.status === 'DUPLICADO') {
       beep(220, 400);
@@ -331,12 +456,8 @@
       beep(440, 200);
       $('cpDesc').textContent = r.cp;
       cordonManual = '';
-      var btns = document.querySelectorAll('.cord-btn');
-      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+      document.querySelectorAll('#cordonBox .cord-btn').forEach(function (b) { b.classList.remove('on'); });
       show('cordonBox'); setMsg('', '');
-
-    } else if (r.status === 'NO_AUTH') {
-      sesionVencida();
 
     } else {
       beep(220, 300);
@@ -344,17 +465,152 @@
     }
   }
 
-  function resetAll() {
+  function resetScan() {
     envioId = ''; matanza = ''; cordonManual = '';
     hide('stepCP'); hide('stepOK'); show('stepScan');
-    stopScan();
     setMsg('', '');
+    $('scanMsg').innerHTML = '';
+    focoScan();
   }
 
-  // Enter en el input de CP = confirmar
+  // ================== DASHBOARD ==================
+  var dashCache = null;
+
+  function loadDashboard(force) {
+    if (dashCache && !force) { renderDashboard(dashCache); return; }
+    $('tblQuincenas').innerHTML = 'Cargando…';
+    $('tblSemanas').innerHTML = 'Cargando…';
+    $('tblUltimos').innerHTML = 'Cargando…';
+    api('dashboard').then(function (r) {
+      if (r.status !== 'OK') { $('tblQuincenas').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>'; return; }
+      dashCache = r;
+      renderDashboard(r);
+    }).catch(function () {});
+  }
+
+  function renderDashboard(d) {
+    $('dHoyCant').textContent = d.hoy.cant;
+    $('dHoyTotal').textContent = money(d.hoy.total);
+    $('dTotalReg').textContent = d.totalRegistros;
+    $('tblQuincenas').innerHTML = tablaPeriodos(d.quincenas, 'Quincena');
+    $('tblSemanas').innerHTML = tablaPeriodos(d.semanas, 'Semana');
+    $('tblUltimos').innerHTML = tablaUltimos(d.ultimos);
+  }
+
+  function tablaPeriodos(arr, etiqueta) {
+    if (!arr.length) return '<div class="hint">Sin registros todavía.</div>';
+    var zonas = ['CABA', 'C1', 'C2', 'C3'];
+    var h = '<table><tr><th>' + etiqueta + '</th>';
+    zonas.forEach(function (z) { h += '<th class="money">' + z + '</th>'; });
+    h += '<th class="money">Envíos</th><th class="money">TOTAL</th></tr>';
+    var gt = 0, gc = 0;
+    arr.forEach(function (p) {
+      h += '<tr><td><b>' + p.nombre + '</b></td>';
+      zonas.forEach(function (z) {
+        var c = p.zonas[z] ? p.zonas[z].c : 0, m = p.zonas[z] ? p.zonas[z].m : 0;
+        h += '<td class="money">' + (c ? c + ' · ' + money(m) : '—') + '</td>';
+      });
+      h += '<td class="money">' + p.cant + '</td><td class="money"><b>' + money(p.total) + '</b></td></tr>';
+      gt += p.total; gc += p.cant;
+    });
+    h += '<tr class="total"><td>TOTAL</td><td colspan="4"></td><td class="money">' + gc + '</td><td class="money">' + money(gt) + '</td></tr>';
+    return h + '</table>';
+  }
+
+  function tablaUltimos(arr) {
+    if (!arr.length) return '<div class="hint">Sin registros todavía.</div>';
+    var h = '<table><tr><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th>Operario</th></tr>';
+    arr.forEach(function (u) {
+      h += '<tr><td>' + u.fecha + '</td><td>' + u.envio + '</td><td>' + u.cp + '</td><td>' + pill(u.zona) +
+           '</td><td class="money">' + money(u.costo) + '</td><td>' + u.operario + '</td></tr>';
+    });
+    return h + '</table>';
+  }
+
+  // ================== SECCIÓN CPs ==================
+  function buscarCP() {
+    var cp = $('inpBuscarCP').value.replace(/\D/g, '');
+    if (cp.length < 4) { $('resBuscar').innerHTML = '<div class="msg msg-err">Ingresá un CP de 4 dígitos.</div>'; return; }
+    $('resBuscar').innerHTML = '<div class="msg msg-warn">Buscando…</div>';
+    api('buscarCP', { cp: cp }).then(function (r) {
+      if (r.status !== 'OK') { $('resBuscar').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>'; return; }
+      if (r.encontrado) {
+        $('resBuscar').innerHTML = '<div class="msg msg-ok">CP <b>' + r.cp + '</b> → ' + pill(r.zona) +
+          (r.localidad ? '<br><span style="font-weight:400">' + r.localidad + '</span>' : '') +
+          (r.notas ? '<br><span style="font-weight:400;font-size:12px">' + r.notas + '</span>' : '') + '</div>';
+      } else {
+        $('resBuscar').innerHTML = '<div class="msg msg-warn">El CP <b>' + r.cp + '</b> no está en la base. Podés agregarlo abajo.</div>';
+        $('inpNuevoCP').value = r.cp;
+      }
+    }).catch(function () {});
+  }
+
+  function pickCordonNuevo(z, btn) {
+    cordonNuevo = z;
+    document.querySelectorAll('.cord-btn.cp-new').forEach(function (b) { b.classList.remove('on'); });
+    btn.classList.add('on');
+  }
+
+  function guardarCP() {
+    var cp = $('inpNuevoCP').value.replace(/\D/g, '');
+    if (cp.length < 4) { $('msgNuevoCP').innerHTML = '<div class="msg msg-err">Ingresá un CP de 4 dígitos.</div>'; return; }
+    if (!cordonNuevo) { $('msgNuevoCP').innerHTML = '<div class="msg msg-err">Elegí un cordón.</div>'; return; }
+    $('msgNuevoCP').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
+    api('guardarCP', { cp: cp, zona: cordonNuevo }).then(function (r) {
+      if (r.status === 'OK') {
+        $('msgNuevoCP').innerHTML = '<div class="msg msg-ok">✅ CP ' + r.cp + ' ' + r.accion + ' con cordón ' + r.zona + '.</div>';
+        $('inpNuevoCP').value = '';
+        cordonNuevo = '';
+        document.querySelectorAll('.cord-btn.cp-new').forEach(function (b) { b.classList.remove('on'); });
+      } else {
+        $('msgNuevoCP').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
+      }
+    }).catch(function () {});
+  }
+
+  // ================== SECCIÓN TARIFAS ==================
+  function loadTarifas() {
+    api('dashboard').then(function (r) {
+      if (r.status !== 'OK') return;
+      dashCache = r;
+      ['CABA', 'C1', 'C2', 'C3'].forEach(function (z) {
+        if (r.tarifas[z] !== undefined) $('t' + z).value = r.tarifas[z];
+      });
+    }).catch(function () {});
+  }
+
+  function guardarTarifas() {
+    var payload = {};
+    ['CABA', 'C1', 'C2', 'C3'].forEach(function (z) { payload[z] = Number($('t' + z).value); });
+    $('msgTarifas').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
+    api('guardarTarifas', payload).then(function (r) {
+      if (r.status === 'OK') {
+        $('msgTarifas').innerHTML = '<div class="msg msg-ok">✅ Tarifas guardadas' + (r.cambios ? ' (' + r.cambios + ' cambio/s)' : ' (sin cambios)') + '.</div>';
+        dashCache = null;
+      } else {
+        $('msgTarifas').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
+      }
+    }).catch(function () {});
+  }
+
+  // ================== eventos ==================
   document.addEventListener('DOMContentLoaded', function () {
+    // La pistola termina con Enter; también sirve para tipeo manual
+    $('inpScan').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); procesarLectura(); }
+    });
+    // Por si el lector no manda Enter: procesar cuando deja de escribir
+    var scanTimer = null;
+    $('inpScan').addEventListener('input', function () {
+      clearTimeout(scanTimer);
+      var v = $('inpScan').value;
+      if (v.length > 10) scanTimer = setTimeout(procesarLectura, 300);
+    });
     $('inpCP').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+    });
+    $('inpBuscarCP').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); buscarCP(); }
     });
   });
 </script>
