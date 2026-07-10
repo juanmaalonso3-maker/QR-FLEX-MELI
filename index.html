@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Control Envíos Flex</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, Roboto, 'Segoe UI', sans-serif; background: #f1f3f4; min-height: 100vh; }
+    .top { background: #1a73e8; color: #fff; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .top .title { font-weight: 700; font-size: 16px; }
+    .top .user { font-size: 11px; opacity: .85; text-align: right; }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 14px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.12); margin-bottom: 14px; }
+
+    .btn { display: block; width: 100%; border: none; border-radius: 12px; padding: 18px; font-size: 19px;
+           font-weight: 700; cursor: pointer; transition: opacity .15s; }
+    .btn:active { opacity: .7; }
+    .btn:disabled { opacity: .4; }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-green { background: #188038; color: #fff; }
+    .btn-gray { background: #e8eaed; color: #3c4043; font-size: 15px; padding: 12px; }
+
+    #reader { width: 100%; border-radius: 12px; overflow: hidden; }
+
+    .envio-badge { background: #e6f4ea; border: 2px solid #188038; color: #188038; border-radius: 10px;
+                   padding: 10px; text-align: center; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin-bottom: 14px; }
+    label.fld { display: block; font-size: 13px; font-weight: 600; color: #5f6368; margin: 10px 0 6px; }
+    input.cp { width: 100%; font-size: 28px; font-weight: 700; text-align: center; padding: 12px;
+               border: 2px solid #dadce0; border-radius: 10px; letter-spacing: 3px; }
+    input.cp:focus { border-color: #1a73e8; outline: none; }
+    input.cp:disabled { background: #f1f3f4; color: #9aa0a6; }
+
+    .matanza { display: flex; gap: 10px; margin: 12px 0; }
+    .mat-btn { flex: 1; padding: 14px 6px; border: 2px solid #dadce0; border-radius: 10px; background: #fff;
+               font-size: 15px; font-weight: 700; color: #5f6368; cursor: pointer; }
+    .mat-btn.on { border-color: #e8710a; background: #fef7e0; color: #e8710a; }
+
+    .cordones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+    .cord-btn { padding: 16px; border: 2px solid #dadce0; border-radius: 10px; background: #fff;
+                font-size: 17px; font-weight: 800; cursor: pointer; }
+    .cord-btn.on { border-color: #1a73e8; background: #e8f0fe; color: #1a73e8; }
+
+    .msg { border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; margin-bottom: 12px; text-align: center; }
+    .msg-ok { background: #e6f4ea; color: #188038; }
+    .msg-err { background: #fce8e6; color: #c5221f; }
+    .msg-warn { background: #fef7e0; color: #b05a00; }
+
+    .counter { text-align: center; color: #5f6368; font-size: 13px; padding-bottom: 20px; }
+    .counter b { color: #1a73e8; font-size: 16px; }
+    .hidden { display: none !important; }
+    .manual-link { text-align: center; margin-top: 12px; }
+    .manual-link a { color: #1a73e8; font-size: 14px; text-decoration: none; font-weight: 600; }
+    .big-ok { text-align: center; padding: 30px 10px; }
+    .big-ok .check { font-size: 64px; }
+    .big-ok .det { font-size: 15px; color: #5f6368; margin-top: 8px; }
+    .login-box { text-align: center; padding: 20px 0; }
+    .login-box .icon { font-size: 48px; margin-bottom: 10px; }
+    .login-box p { color: #5f6368; font-size: 14px; margin-bottom: 18px; }
+    #gsiBtn { display: flex; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="title">📦 Envíos Flex</div>
+    <div class="user" id="userLabel"></div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <div id="stepLogin" class="card">
+      <div class="login-box">
+        <div class="icon">🔐</div>
+        <p>Ingresá con tu cuenta <b>@bitek.com.ar</b><br>para registrar envíos.</p>
+        <div id="gsiBtn"></div>
+        <div id="loginMsg"></div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="hidden">
+
+      <!-- PASO 1: escanear -->
+      <div id="stepScan" class="card">
+        <button class="btn btn-primary" id="btnScan" onclick="startScan()">📷 ESCANEAR QR</button>
+        <div id="reader" class="hidden" style="margin-top:12px"></div>
+        <button class="btn btn-gray hidden" id="btnCancelScan" onclick="stopScan()" style="margin-top:10px">Cancelar</button>
+        <div class="manual-link"><a href="#" onclick="manualEnvio(); return false;">Ingresar N° de envío a mano</a></div>
+      </div>
+
+      <!-- PASO 2: CP / Matanza -->
+      <div id="stepCP" class="card hidden">
+        <div class="envio-badge">Envío: <span id="envioShow"></span></div>
+
+        <label class="fld">Código Postal de destino</label>
+        <input class="cp" id="inpCP" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____"
+               autocomplete="off">
+
+        <div class="matanza">
+          <button class="mat-btn" id="matN" onclick="toggleMatanza('NORTE')">La Matanza<br>NORTE</button>
+          <button class="mat-btn" id="matS" onclick="toggleMatanza('SUR')">La Matanza<br>SUR</button>
+        </div>
+
+        <!-- Selector de cordón para CP desconocido -->
+        <div id="cordonBox" class="hidden">
+          <div class="msg msg-warn">⚠️ El CP <b id="cpDesc"></b> no está en la base.<br>Elegí el cordón para agregarlo:</div>
+          <div class="cordones">
+            <button class="cord-btn" onclick="pickCordon('CABA', this)">CABA</button>
+            <button class="cord-btn" onclick="pickCordon('C1', this)">C1</button>
+            <button class="cord-btn" onclick="pickCordon('C2', this)">C2</button>
+            <button class="cord-btn" onclick="pickCordon('C3', this)">C3</button>
+          </div>
+        </div>
+
+        <div id="msgBox"></div>
+
+        <button class="btn btn-green" id="btnConfirm" onclick="confirmar()" style="margin-top:6px">✅ CONFIRMAR</button>
+        <button class="btn btn-gray" onclick="resetAll()" style="margin-top:10px">Cancelar</button>
+      </div>
+
+      <!-- PASO 3: OK -->
+      <div id="stepOK" class="card hidden">
+        <div class="big-ok">
+          <div class="check">✅</div>
+          <div style="font-size:20px;font-weight:800;color:#188038">¡Registrado!</div>
+          <div class="det" id="okDetail"></div>
+        </div>
+      </div>
+
+      <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b></div>
+    </div>
+  </div>
+
+<script>
+  // ================== CONFIGURACIÓN ==================
+  var API_URL = 'https://script.google.com/macros/s/AKfycbxyp_Gfux0evF0-DM4YtCaVBZEX4-JQVe1xRs5w_EY_ZFvOMb-G4XB8tbpVZcxN3Wn4eA/exec';
+  var CLIENT_ID = '849214701404-ff11l3oo5k9hecabvf99cnbbgjlegeam.apps.googleusercontent.com'; // el mismo que en Code.gs
+  // ====================================================
+
+  var idToken = '';
+  var scanner = null;
+  var envioId = '';
+  var matanza = '';
+  var cordonManual = '';
+  var saving = false;
+
+  // ---------- utilidades ----------
+  function $(id) { return document.getElementById(id); }
+  function show(id) { $(id).classList.remove('hidden'); }
+  function hide(id) { $(id).classList.add('hidden'); }
+  function setMsg(html, cls) { $('msgBox').innerHTML = html ? '<div class="msg ' + cls + '">' + html + '</div>' : ''; }
+
+  function beep(freq, dur) {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq; g.gain.value = 0.15;
+      o.start(); setTimeout(function () { o.stop(); ctx.close(); }, dur);
+    } catch (e) {}
+  }
+
+  // ---------- API (fetch al Apps Script) ----------
+  function api(action, payload) {
+    return fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ token: idToken, action: action, payload: payload || {} })
+      // sin headers: el content-type text/plain evita el preflight CORS
+    }).then(function (r) { return r.json(); });
+  }
+
+  // ---------- Google Sign-In ----------
+  window.addEventListener('load', function initGsi() {
+    if (!window.google || !google.accounts) { setTimeout(initGsi, 200); return; }
+    google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onCredential, auto_select: true });
+    google.accounts.id.renderButton($('gsiBtn'), { theme: 'filled_blue', size: 'large', text: 'signin_with', width: 280 });
+    google.accounts.id.prompt(); // one-tap si ya inició sesión antes
+  });
+
+  function onCredential(resp) {
+    idToken = resp.credential;
+    $('loginMsg').innerHTML = '<div class="msg msg-warn">Verificando…</div>';
+    api('estado').then(function (r) {
+      if (r.status === 'OK') {
+        $('userLabel').textContent = r.email;
+        $('cntHoy').textContent = r.hoy;
+        $('loginMsg').innerHTML = '';
+        hide('stepLogin'); show('app');
+      } else {
+        idToken = '';
+        $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ Cuenta no autorizada.<br>Usá tu cuenta @bitek.com.ar.</div>';
+      }
+    }).catch(function (e) {
+      idToken = '';
+      $('loginMsg').innerHTML = '<div class="msg msg-err">Error de conexión con el servidor.<br>' + e.message + '</div>';
+    });
+  }
+
+  function sesionVencida() {
+    idToken = '';
+    resetAll();
+    hide('app'); show('stepLogin');
+    $('loginMsg').innerHTML = '<div class="msg msg-warn">Tu sesión venció. Volvé a ingresar.</div>';
+    try { google.accounts.id.prompt(); } catch (e) {}
+  }
+
+  // ---------- extracción del N° de envío del QR ----------
+  function extraerEnvio(text) {
+    text = String(text || '').trim();
+    // 1) JSON de Mercado Libre Flex: {"id":47492195100,"sender_id":...,"hash_code":"...","security_digit":...}
+    try {
+      var o = JSON.parse(text);
+      if (o && o.id) return String(o.id).replace(/\D/g, '');
+    } catch (e) {}
+    // 2) regex por si el JSON viene malformado
+    var m = text.match(/"id"\s*:\s*"?(\d{8,})/);
+    if (m) return m[1];
+    // 3) QR que es solo un número
+    if (/^\d{8,}$/.test(text)) return text;
+    return null;
+  }
+
+  // ---------- escaneo ----------
+  function startScan() {
+    hide('btnScan'); show('reader'); show('btnCancelScan');
+    scanner = new Html5Qrcode('reader');
+    scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 230, height: 230 } },
+      function (decodedText) {
+        var id = extraerEnvio(decodedText);
+        if (!id) { setMsg('QR leído pero no parece una etiqueta Flex. Probá de nuevo.', 'msg-err'); return; }
+        beep(880, 120);
+        stopScan();
+        gotEnvio(id);
+      },
+      function () { /* frames sin QR: ignorar */ }
+    ).catch(function (err) {
+      stopScan();
+      alert('No se pudo abrir la cámara.\n\nSi el navegador no pide permiso, abrí esta página directamente en Chrome (no dentro de otra app) y verificá los permisos de cámara.\n\nDetalle: ' + err);
+    });
+  }
+
+  function stopScan() {
+    if (scanner) { try { scanner.stop().then(function(){ scanner.clear(); }); } catch (e) {} scanner = null; }
+    hide('reader'); hide('btnCancelScan'); show('btnScan');
+  }
+
+  function manualEnvio() {
+    var v = prompt('Ingresá el número de envío (el que figura como "Envio" en la etiqueta):');
+    if (!v) return;
+    var id = String(v).replace(/\D/g, '');
+    if (id.length < 8) { alert('Número inválido.'); return; }
+    gotEnvio(id);
+  }
+
+  function gotEnvio(id) {
+    envioId = id;
+    $('envioShow').textContent = id;
+    hide('stepScan'); show('stepCP');
+    matanza = ''; cordonManual = '';
+    $('inpCP').value = ''; $('inpCP').disabled = false;
+    $('matN').classList.remove('on'); $('matS').classList.remove('on');
+    hide('cordonBox'); setMsg('', '');
+    setTimeout(function () { $('inpCP').focus(); }, 150);
+  }
+
+  // ---------- Matanza ----------
+  function toggleMatanza(cual) {
+    matanza = (matanza === cual) ? '' : cual;
+    $('matN').classList.toggle('on', matanza === 'NORTE');
+    $('matS').classList.toggle('on', matanza === 'SUR');
+    $('inpCP').disabled = !!matanza;
+    if (matanza) { $('inpCP').value = ''; hide('cordonBox'); cordonManual = ''; setMsg('', ''); }
+  }
+
+  // ---------- CP desconocido: elegir cordón ----------
+  function pickCordon(z, btn) {
+    cordonManual = z;
+    var btns = document.querySelectorAll('.cord-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+    btn.classList.add('on');
+  }
+
+  // ---------- confirmar ----------
+  function confirmar() {
+    if (saving) return;
+    if (!matanza) {
+      var cp = $('inpCP').value.replace(/\D/g, '');
+      if (cp.length < 4) { setMsg('Ingresá el CP (4 dígitos) o marcá La Matanza.', 'msg-err'); return; }
+    }
+    if (!$('cordonBox').classList.contains('hidden') && !cordonManual) {
+      setMsg('Elegí un cordón para este CP.', 'msg-err'); return;
+    }
+    saving = true;
+    $('btnConfirm').disabled = true;
+    setMsg('Guardando…', 'msg-warn');
+
+    api('registrar', {
+      envioId: envioId,
+      cp: $('inpCP').value,
+      matanza: matanza,
+      cordonManual: cordonManual
+    }).then(onResp).catch(function (e) {
+      saving = false; $('btnConfirm').disabled = false;
+      setMsg('Error de conexión: ' + e.message + '<br>Reintentá.', 'msg-err');
+      beep(220, 300);
+    });
+  }
+
+  function onResp(r) {
+    saving = false;
+    $('btnConfirm').disabled = false;
+
+    if (r.status === 'OK') {
+      beep(1320, 150);
+      $('cntHoy').textContent = r.hoy;
+      $('okDetail').textContent = 'Envío ' + r.envioId + ' • ' + r.cp + ' • Zona ' + r.zona;
+      hide('stepCP'); show('stepOK');
+      setTimeout(resetAll, 1400);
+
+    } else if (r.status === 'DUPLICADO') {
+      beep(220, 400);
+      setMsg('🚫 <b>YA REGISTRADO</b><br>el ' + r.fecha + '<br>por ' + r.operario, 'msg-err');
+
+    } else if (r.status === 'CP_DESCONOCIDO') {
+      beep(440, 200);
+      $('cpDesc').textContent = r.cp;
+      cordonManual = '';
+      var btns = document.querySelectorAll('.cord-btn');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+      show('cordonBox'); setMsg('', '');
+
+    } else if (r.status === 'NO_AUTH') {
+      sesionVencida();
+
+    } else {
+      beep(220, 300);
+      setMsg(r.msg || 'Error desconocido.', 'msg-err');
+    }
+  }
+
+  function resetAll() {
+    envioId = ''; matanza = ''; cordonManual = '';
+    hide('stepCP'); hide('stepOK'); show('stepScan');
+    stopScan();
+    setMsg('', '');
+  }
+
+  // Enter en el input de CP = confirmar
+  document.addEventListener('DOMContentLoaded', function () {
+    $('inpCP').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+    });
+  });
+</script>
+</body>
+</html>
