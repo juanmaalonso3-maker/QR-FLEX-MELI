@@ -11,7 +11,7 @@
     :root {
       --azul: #2563eb; --azul-hover: #1d4ed8; --verde: #16a34a; --rojo: #dc2626;
       --naranja: #ea580c; --gris: #64748b; --texto: #0f172a; --borde: #e2e8f0;
-      --fondo: #f1f5f9; --sidebar: #0f172a; --sidebar2: #1e293b;
+      --fondo: #f1f5f9; --sidebar: #0f172a; --sidebar2: #1e293b; --ambar: #d97706;
       --sombra: 0 4px 20px rgba(15, 23, 42, .06);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -27,15 +27,14 @@
     .login-card p { color: var(--gris); font-size: 14px; margin-bottom: 24px; }
     #gsiBtn { display: flex; justify-content: center; }
 
-    /* ============ LAYOUT (menú a la izquierda) ============ */
+    /* ============ LAYOUT ============ */
     #shell { display: flex; min-height: 100vh; }
-
     .sidebar { width: 232px; background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar2) 100%);
                color: #cbd5e1; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; }
     .sidebar .logo { padding: 22px 20px 18px; font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px;
                      border-bottom: 1px solid rgba(255,255,255,.08); }
     .sidebar .logo .lg-ico { font-size: 24px; }
-    .sidebar nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; }
+    .sidebar nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
     .sidebar nav button { display: flex; align-items: center; gap: 12px; width: 100%; border: none; background: none;
                           color: #94a3b8; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600;
                           font-family: inherit; cursor: pointer; transition: all .15s; text-align: left; }
@@ -45,7 +44,7 @@
     .sidebar .foot { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11px; color: #64748b;
                      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    main { flex: 1; margin-left: 232px; padding: 26px 30px 50px; max-width: 1060px; }
+    main { flex: 1; margin-left: 232px; padding: 26px 30px 50px; max-width: 1100px; }
     .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
     .page-sub { font-size: 13px; color: var(--gris); margin-bottom: 22px; }
 
@@ -72,9 +71,9 @@
     .btn-gray { background: #eef2f7; color: #334155; font-size: 14px; padding: 12px; }
     .btn-sm { padding: 9px 16px; font-size: 13px; width: auto; display: inline-block; }
 
-    input.field { width: 100%; font-size: 16px; padding: 13px 14px; border: 2px solid var(--borde); border-radius: 12px;
+    input.field, select.field { width: 100%; font-size: 16px; padding: 13px 14px; border: 2px solid var(--borde); border-radius: 12px;
                   font-family: inherit; transition: border .15s; background: #fff; }
-    input.field:focus { border-color: var(--azul); outline: none; box-shadow: 0 0 0 4px rgba(37,99,235,.1); }
+    input.field:focus, select.field:focus { border-color: var(--azul); outline: none; box-shadow: 0 0 0 4px rgba(37,99,235,.1); }
     input.big { font-size: 24px; font-weight: 700; text-align: center; letter-spacing: 2px; }
     input.field:disabled { background: var(--fondo); color: #94a3b8; }
     label.fld { display: block; font-size: 13px; font-weight: 600; color: var(--gris); margin: 12px 0 7px; }
@@ -108,6 +107,17 @@
     .stat .lbl { font-size: 12px; color: var(--gris); margin-top: 3px; font-weight: 500; }
     .stat.azul .num { color: var(--azul); }
     .stat.verde .num { color: var(--verde); }
+    .stat.rojo .num { color: var(--rojo); }
+
+    .zonas-hoy { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+    .zbox { border-radius: 16px; padding: 16px; text-align: center; border: 2px solid; }
+    .zbox .zn { font-size: 12px; font-weight: 800; letter-spacing: .5px; }
+    .zbox .qn { font-size: 26px; font-weight: 800; margin-top: 4px; }
+    .zbox.CABA { border-color: #bfdbfe; background: #eff6ff; color: var(--azul); }
+    .zbox.C1 { border-color: #bbf7d0; background: #f0fdf4; color: var(--verde); }
+    .zbox.C2 { border-color: #fed7aa; background: #fff7ed; color: var(--naranja); }
+    .zbox.C3 { border-color: #fecaca; background: #fef2f2; color: var(--rojo); }
+    @media (max-width: 640px) { .zonas-hoy { grid-template-columns: repeat(2, 1fr); } }
 
     .tbl-wrap { overflow-x: auto; border-radius: 12px; }
     table { border-collapse: collapse; width: 100%; font-size: 13px; white-space: nowrap; }
@@ -116,6 +126,7 @@
     td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
     tr:hover td { background: #f8fafc; }
     tr.total td { font-weight: 800; background: #fffbeb; }
+    tr.grp td { background: #eef2ff; font-weight: 800; color: var(--azul); }
     td.money, th.money { text-align: right; }
     .zona-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
     .z-CABA { background: #eff6ff; color: var(--azul); }
@@ -129,7 +140,7 @@
     .icon-btn:hover { background: #e2e8f0; }
     .icon-btn.del:hover { background: #fee2e2; }
 
-    .refresh-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .refresh-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
     .refresh-row h2 { margin: 0; }
 
     .counter { text-align: center; color: var(--gris); font-size: 13px; padding: 8px 0; }
@@ -141,6 +152,24 @@
     .big-ok .det { font-size: 14px; color: var(--gris); margin-top: 8px; }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+
+    /* Estado de sincronización en la lista de escaneos */
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .dot.pendiente { background: var(--ambar); animation: pulse 1s infinite; }
+    .dot.ok { background: var(--verde); }
+    .dot.error { background: var(--rojo); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    tr.row-error td { background: #fef2f2; }
+
+    .filtros { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .filtros .field { flex: 1; min-width: 140px; }
+
+    .quin-card { border: 1px solid var(--borde); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+    .quin-card.actual { border-color: var(--azul); background: #eff6ff; }
+    .quin-card .qtit { font-weight: 800; font-size: 15px; }
+    .quin-card .qsub { font-size: 12px; color: var(--gris); margin: 2px 0 8px; }
+    .quin-card .sem { display: inline-block; background: #f1f5f9; border-radius: 8px; padding: 5px 10px; font-size: 12px; margin-right: 8px; margin-top: 4px; }
+    .badge-actual { background: var(--azul); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -162,8 +191,11 @@
     <aside class="sidebar">
       <div class="logo"><span class="lg-ico">📦</span><span class="txt">Envíos Flex</span></div>
       <nav>
-        <button id="nav-dashboard" class="on" onclick="switchSec('dashboard')"><span class="ico">📊</span><span class="txt">Dashboard</span></button>
+        <button id="nav-dashboard" class="on" onclick="switchSec('dashboard')"><span class="ico">📊</span><span class="txt">Dashboard Hoy</span></button>
         <button id="nav-escaneo" onclick="switchSec('escaneo')"><span class="ico">📷</span><span class="txt">Escaneo</span></button>
+        <button id="nav-historial" onclick="switchSec('historial')"><span class="ico">🗂️</span><span class="txt">Historial</span></button>
+        <button id="nav-financiero" onclick="switchSec('financiero')"><span class="ico">💵</span><span class="txt">Financiero</span></button>
+        <button id="nav-quincenas" onclick="switchSec('quincenas')"><span class="ico">📆</span><span class="txt">Quincenas</span></button>
         <button id="nav-cps" onclick="switchSec('cps')"><span class="ico">📮</span><span class="txt">Códigos Postales</span></button>
         <button id="nav-tarifas" onclick="switchSec('tarifas')"><span class="ico">💲</span><span class="txt">Tarifas</span></button>
       </nav>
@@ -172,29 +204,31 @@
 
     <main>
 
-      <!-- ========== DASHBOARD ========== -->
+      <!-- ========== DASHBOARD HOY ========== -->
       <div id="sec-dashboard" class="sec">
-        <div class="page-title">Dashboard</div>
-        <div class="page-sub">Quincena actual: <b id="dQuinAct">–</b></div>
+        <div class="refresh-row">
+          <div>
+            <div class="page-title">Dashboard · Hoy</div>
+            <div class="page-sub">Quincena actual: <b id="dQuinAct">–</b> · <span id="dFechaHoy">–</span></div>
+          </div>
+          <button class="btn btn-gray btn-sm" onclick="loadDashboard(true)">🔄 Actualizar</button>
+        </div>
 
         <div class="stats">
           <div class="stat azul"><div class="ic">📦</div><div class="num" id="dHoyCant">–</div><div class="lbl">Envíos hoy</div></div>
           <div class="stat verde"><div class="ic">💰</div><div class="num" id="dHoyTotal">–</div><div class="lbl">Gasto hoy</div></div>
-          <div class="stat"><div class="ic">🗂️</div><div class="num" id="dTotalReg">–</div><div class="lbl">Registros totales</div></div>
+          <div class="stat rojo"><div class="ic">⚠️</div><div class="num" id="dErrores">–</div><div class="lbl">Errores/fallas hoy</div></div>
           <div class="stat"><div class="ic">📮</div><div class="num" id="dTotalCPs">–</div><div class="lbl">CPs en la base</div></div>
         </div>
 
         <div class="card">
-          <div class="refresh-row">
-            <h2 class="sec-title">💰 Gastos por quincena (corte viernes)</h2>
-            <button class="btn btn-gray btn-sm" onclick="loadDashboard(true)">🔄 Actualizar</button>
+          <h2 class="sec-title">📍 Desglose por zona (hoy)</h2>
+          <div class="zonas-hoy">
+            <div class="zbox CABA"><div class="zn">CABA</div><div class="qn" id="zCABA">–</div></div>
+            <div class="zbox C1"><div class="zn">C1</div><div class="qn" id="zC1">–</div></div>
+            <div class="zbox C2"><div class="zn">C2</div><div class="qn" id="zC2">–</div></div>
+            <div class="zbox C3"><div class="zn">C3</div><div class="qn" id="zC3">–</div></div>
           </div>
-          <div class="tbl-wrap" id="tblQuincenas">Cargando…</div>
-        </div>
-
-        <div class="card">
-          <h2 class="sec-title">📅 Gastos por semana (lunes a sábado)</h2>
-          <div class="tbl-wrap" id="tblSemanas">Cargando…</div>
         </div>
 
         <div class="card">
@@ -206,7 +240,7 @@
       <!-- ========== ESCANEO ========== -->
       <div id="sec-escaneo" class="sec hidden">
         <div class="page-title">Escaneo</div>
-        <div class="page-sub">Escaneá la etiqueta con la pistola lectora</div>
+        <div class="page-sub">Escaneá la etiqueta con la pistola lectora · confirmación instantánea, carga en segundo plano</div>
 
         <div id="stepScan" class="card">
           <label class="fld">Lectura del QR (o número de envío a mano + Enter)</label>
@@ -243,35 +277,25 @@
           <button class="btn btn-gray" onclick="resetScan()" style="margin-top:10px">Cancelar</button>
         </div>
 
-        <div id="stepOK" class="card hidden">
-          <div class="big-ok">
-            <div class="check">✅</div>
-            <div style="font-size:20px;font-weight:800;color:var(--verde)">¡Registrado!</div>
-            <div class="det" id="okDetail"></div>
-          </div>
-        </div>
+        <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b> · <span id="pendientesInfo"></span></div>
 
-        <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b></div>
-
-        <!-- Últimos 5 escaneos con editar/eliminar -->
+        <!-- Últimos escaneos (estado local + sync) con editar/eliminar -->
         <div class="card">
-          <h2 class="sec-title">🕐 Últimos 5 escaneos</h2>
+          <div class="refresh-row"><h2 class="sec-title">🕐 Últimos escaneos</h2>
+            <button class="btn btn-gray btn-sm" onclick="cargarUltimos()">🔄</button></div>
           <div class="tbl-wrap" id="listaUltimos">Cargando…</div>
         </div>
 
         <!-- Editor de un escaneo -->
         <div id="cardEdit" class="card hidden">
           <h2 class="sec-title">✏️ Editando envío <span id="editEnvioShow"></span></h2>
-
           <label class="fld">Nuevo Código Postal</label>
           <input class="field big" id="inpCPEdit" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" autocomplete="off">
-
           <div class="matanza">
             <button class="mat-btn me" id="matNE" onclick="tapMatanzaEdit('NORTE')">LA MATANZA<br>NORTE</button>
             <button class="mat-btn me" id="matME" onclick="tapMatanzaEdit('MATANZA')">LA MATANZA</button>
             <button class="mat-btn me" id="matSE" onclick="tapMatanzaEdit('SUR')">LA MATANZA<br>SUR</button>
           </div>
-
           <div id="cordonBoxEdit" class="hidden">
             <div class="msg msg-warn" id="cpDescMsgEdit"></div>
             <div class="cordones">
@@ -281,11 +305,90 @@
               <button class="cord-btn cb-edit" onclick="pickCordonEdit('C3', this)">C3</button>
             </div>
           </div>
-
           <div id="msgEdit"></div>
-
           <button class="btn btn-green" id="btnGuardarEdit" onclick="guardarEdicion()">💾 Guardar cambios</button>
           <button class="btn btn-gray" onclick="cerrarEdicion()" style="margin-top:10px">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- ========== HISTORIAL ========== -->
+      <div id="sec-historial" class="sec hidden">
+        <div class="refresh-row">
+          <div><div class="page-title">Historial completo</div>
+          <div class="page-sub">Todos los escaneos · buscá por CP o fecha, agrupá por semana o quincena</div></div>
+          <button class="btn btn-gray btn-sm" onclick="loadHistorial(true)">🔄 Actualizar</button>
+        </div>
+        <div class="card">
+          <div class="filtros">
+            <input class="field" id="hBuscar" type="text" placeholder="🔍 Buscar por CP, envío o fecha (dd/mm)…">
+            <select class="field" id="hQuincena" onchange="renderHistorial()"><option value="">Todas las quincenas</option></select>
+            <select class="field" id="hSemana" onchange="renderHistorial()"><option value="">Todas las semanas</option></select>
+            <select class="field" id="hAgrupar" onchange="renderHistorial()">
+              <option value="">Sin agrupar</option>
+              <option value="quincena">Agrupar por quincena</option>
+              <option value="semana">Agrupar por semana</option>
+            </select>
+          </div>
+          <div class="page-sub" id="hResumen"></div>
+          <div class="tbl-wrap" id="tblHistorial">Cargando…</div>
+        </div>
+      </div>
+
+      <!-- ========== FINANCIERO ========== -->
+      <div id="sec-financiero" class="sec hidden">
+        <div class="refresh-row">
+          <div><div class="page-title">Dashboard financiero</div>
+          <div class="page-sub">Análisis histórico: envíos acumulados × tarifa por zona</div></div>
+          <button class="btn btn-gray btn-sm" onclick="loadFinanciero(true)">🔄 Actualizar</button>
+        </div>
+
+        <div class="card">
+          <h2 class="sec-title">🎛️ Filtros</h2>
+          <div class="filtros">
+            <select class="field" id="fQuincena" onchange="renderFinanciero()"><option value="">Todas las quincenas</option></select>
+            <div style="flex:1; min-width:140px">
+              <label class="fld" style="margin:0 0 4px">Desde</label>
+              <input class="field" id="fDesde" type="date" onchange="renderFinanciero()">
+            </div>
+            <div style="flex:1; min-width:140px">
+              <label class="fld" style="margin:0 0 4px">Hasta</label>
+              <input class="field" id="fHasta" type="date" onchange="renderFinanciero()">
+            </div>
+            <div style="display:flex; align-items:flex-end">
+              <button class="btn btn-gray btn-sm" onclick="limpiarFiltrosFin()">✕ Limpiar</button>
+            </div>
+          </div>
+          <div class="page-sub" id="fResumenFiltro"></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat verde"><div class="ic">💵</div><div class="num" id="fTotal">–</div><div class="lbl">Gasto total acumulado</div></div>
+          <div class="stat azul"><div class="ic">📦</div><div class="num" id="fCant">–</div><div class="lbl">Envíos totales</div></div>
+          <div class="stat"><div class="ic">🧮</div><div class="num" id="fProm">–</div><div class="lbl">Costo promedio / envío</div></div>
+        </div>
+        <div class="card">
+          <h2 class="sec-title">🧭 Acumulado por zona (histórico)</h2>
+          <div class="tbl-wrap" id="tblFinZona">Cargando…</div>
+        </div>
+        <div class="card">
+          <h2 class="sec-title">💰 Por quincena (corte viernes)</h2>
+          <div class="tbl-wrap" id="tblFinQuin">Cargando…</div>
+        </div>
+        <div class="card">
+          <h2 class="sec-title">📅 Por semana (lunes a sábado)</h2>
+          <div class="tbl-wrap" id="tblFinSem">Cargando…</div>
+        </div>
+      </div>
+
+      <!-- ========== QUINCENAS ========== -->
+      <div id="sec-quincenas" class="sec hidden">
+        <div class="refresh-row">
+          <div><div class="page-title">Hoja de Quincenas</div>
+          <div class="page-sub">Cortes calculados automáticamente (siempre viernes, cada 14 días)</div></div>
+          <button class="btn btn-gray btn-sm" onclick="loadQuincenas(true)">🔄 Actualizar</button>
+        </div>
+        <div class="card">
+          <div id="listaQuincenas">Cargando…</div>
         </div>
       </div>
 
@@ -293,7 +396,6 @@
       <div id="sec-cps" class="sec hidden">
         <div class="page-title">Códigos Postales</div>
         <div class="page-sub">Base de datos CP → Cordón</div>
-
         <div class="grid2">
           <div class="card">
             <h2 class="sec-title">🔍 Buscar CP</h2>
@@ -303,7 +405,6 @@
             </div>
             <div id="resBuscar"></div>
           </div>
-
           <div class="card">
             <h2 class="sec-title">➕ Agregar o corregir CP</h2>
             <label class="fld">Código Postal</label>
@@ -324,17 +425,22 @@
 
       <!-- ========== TARIFAS ========== -->
       <div id="sec-tarifas" class="sec hidden">
-        <div class="page-title">Tarifas</div>
-        <div class="page-sub">Costo por cordón que cobra la logística</div>
-
+        <div class="refresh-row">
+          <div><div class="page-title">Tarifas</div>
+          <div class="page-sub">Costo por cordón que cobra la logística</div></div>
+          <button class="btn btn-gray btn-sm" onclick="loadTarifas(true)">🔄 Recargar</button>
+        </div>
         <div class="card" style="max-width:460px">
-          <div class="tarifa-row"><span class="zn zona-pill z-CABA">CABA</span><input class="field" id="tCABA" type="number" min="0"></div>
-          <div class="tarifa-row"><span class="zn zona-pill z-C1">C1</span><input class="field" id="tC1" type="number" min="0"></div>
-          <div class="tarifa-row"><span class="zn zona-pill z-C2">C2</span><input class="field" id="tC2" type="number" min="0"></div>
-          <div class="tarifa-row"><span class="zn zona-pill z-C3">C3</span><input class="field" id="tC3" type="number" min="0"></div>
-          <div id="msgTarifas"></div>
-          <button class="btn btn-green" onclick="guardarTarifas()">💾 Guardar tarifas</button>
-          <div class="hint">Los cambios aplican a escaneos futuros. Los registros históricos conservan el costo vigente al momento del escaneo (así la auditoría de períodos viejos no se distorsiona).</div>
+          <div id="tarifasLoading" class="msg msg-warn">Cargando tarifas actuales…</div>
+          <div id="tarifasForm" class="hidden">
+            <div class="tarifa-row"><span class="zn zona-pill z-CABA">CABA</span><input class="field" id="tCABA" type="number" min="0"></div>
+            <div class="tarifa-row"><span class="zn zona-pill z-C1">C1</span><input class="field" id="tC1" type="number" min="0"></div>
+            <div class="tarifa-row"><span class="zn zona-pill z-C2">C2</span><input class="field" id="tC2" type="number" min="0"></div>
+            <div class="tarifa-row"><span class="zn zona-pill z-C3">C3</span><input class="field" id="tC3" type="number" min="0"></div>
+            <div id="msgTarifas"></div>
+            <button class="btn btn-green" onclick="guardarTarifas()">💾 Guardar tarifas</button>
+            <div class="hint">Los cambios aplican a escaneos futuros. Los registros históricos conservan el costo vigente al momento del escaneo.</div>
+          </div>
         </div>
       </div>
 
@@ -345,19 +451,24 @@
   // ================== CONFIGURACIÓN ==================
   var API_URL = 'https://script.google.com/macros/s/AKfycbww_Fy5VYNfVlvud3-pUWmDp0pBV3uO5YWVjIrJkwBfKv6oqQy1Pc4roEnD8YsWqGOwfQ/exec';
   var CLIENT_ID = '849214701404-ff11l3oo5k9hecabvf99cnbbgjlegeam.apps.googleusercontent.com'; // el mismo que en Code.gs
+  // Ancla de cortes (debe coincidir con CORTE_ANCLA del backend): viernes 19/06/2026
+  var CORTE_ANCLA = new Date(2026, 5, 19);
+  var MS_DIA = 24 * 3600 * 1000;
+  var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
   // ====================================================
 
   var idToken = '';
-  var envioId = '';
-  var matanza = '';
-  var cordonManual = '';
-  var cordonNuevo = '';
-  var saving = false;
+  var envioId = '', matanza = '', cordonManual = '', cordonNuevo = '', saving = false;
   var secActual = 'dashboard';
-  var dashCache = null;
-  var editandoId = '';
-  var matanzaEdit = '';
-  var cordonEdit = '';
+  var editandoId = '', matanzaEdit = '', cordonEdit = '';
+
+  // ---- estado local en memoria ----
+  var mapaCPs = {};            // { cp: 'CABA'|'C1'|... }  (se baja una vez al loguear)
+  var mapaCPsListo = false;
+  var tarifasLocal = {};       // { CABA: 2750, ... }
+  var escaneosLocal = [];      // registros optimistas de la sesión
+  var localSeq = 0;
+  var dashCache = null, histCache = null, finCache = null, quinCache = null;
 
   // ---------- utilidades ----------
   function $(id) { return document.getElementById(id); }
@@ -366,6 +477,8 @@
   function setMsg(html, cls) { $('msgBox').innerHTML = html ? '<div class="msg ' + cls + '">' + html + '</div>' : ''; }
   function money(n) { return '$' + Number(n || 0).toLocaleString('es-AR'); }
   function pill(z) { return '<span class="zona-pill z-' + z + '">' + (z || '—') + '</span>'; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   function beep(freq, dur) {
     try {
@@ -375,6 +488,28 @@
       o.frequency.value = freq; g.gain.value = 0.15;
       o.start(); setTimeout(function () { o.stop(); ctx.close(); }, dur);
     } catch (e) {}
+  }
+
+  // ---------- CÁLCULO LOCAL DE CORTES (espejo del backend) ----------
+  function corteDeJS(fecha) {
+    var d = new Date(fecha); d.setHours(12, 0, 0, 0);
+    var ancla = new Date(CORTE_ANCLA); ancla.setHours(12, 0, 0, 0);
+    var diff = Math.round((d - ancla) / MS_DIA);
+    var k = Math.ceil(diff / 14);
+    return new Date(ancla.getTime() + k * 14 * MS_DIA);
+  }
+  function ddMM(d) { return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2); }
+  function ddMMyyyy(d) { return ddMM(d) + '/' + d.getFullYear(); }
+  function calcQuincena(fecha) {
+    var corte = corteDeJS(fecha);
+    var inicio = new Date(corte.getTime() - 11 * MS_DIA);
+    return ddMM(inicio) + ' al ' + ddMM(corte);
+  }
+  function calcSemana(fecha) {
+    var d = new Date(fecha);
+    var off = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - off);
+    return 'Semana del ' + ddMMyyyy(d);
   }
 
   // ---------- API ----------
@@ -387,10 +522,7 @@
       return r;
     });
   }
-
-  function errorHTML(e) {
-    return '<div class="msg msg-err">Error de conexión: ' + (e && e.message ? e.message : e) + '</div>';
-  }
+  function errorHTML(e) { return '<div class="msg msg-err">Error de conexión: ' + esc(e && e.message ? e.message : e) + '</div>'; }
 
   // ---------- Google Sign-In ----------
   window.addEventListener('load', function initGsi() {
@@ -403,26 +535,37 @@
   function onCredential(resp) {
     idToken = resp.credential;
     $('loginMsg').innerHTML = '<div class="msg msg-warn">Verificando…</div>';
-    fetch(API_URL, { method: 'POST', body: JSON.stringify({ token: idToken, action: 'estado', payload: {} }) })
-      .then(function (r) { return r.json(); })
-      .then(function (r) {
-        if (r.status === 'OK') {
-          $('userLabel').textContent = r.email;
-          $('cntHoy').textContent = r.hoy;
-          if (r.ultimos) renderUltimos(r.ultimos);
-          $('loginMsg').innerHTML = '';
-          hide('stepLogin'); show('shell');
-          switchSec('dashboard'); // arranca en el Dashboard
-        } else {
-          idToken = '';
-          $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
-            (r.msg ? r.msg : 'Cuenta no autorizada. Usá tu cuenta @bitek.com.ar.') + '</div>';
-        }
-      })
-      .catch(function (e) {
+    api('estado', {}).then(function (r) {
+      if (r.status === 'OK') {
+        $('userLabel').textContent = r.email;
+        $('cntHoy').textContent = r.hoy;
+        tarifasLocal = r.tarifas || {};
+        // Semilla de la lista con los últimos del server (marcados como sincronizados)
+        escaneosLocal = (r.ultimos || []).map(function (u) {
+          return { localId: 'srv' + (localSeq++), fecha: u.fecha, envio: u.envio, cp: u.cp,
+                   zona: u.zona, costo: u.costo, operario: u.operario, sync: 'ok', fromServer: true };
+        });
+        $('loginMsg').innerHTML = '';
+        hide('stepLogin'); show('shell');
+        switchSec('dashboard');
+        precargarMapaCPs();
+      } else {
         idToken = '';
-        $('loginMsg').innerHTML = errorHTML(e);
-      });
+        $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
+          esc(r.msg ? r.msg : 'Cuenta no autorizada. Usá tu cuenta @bitek.com.ar.') + '</div>';
+      }
+    }).catch(function (e) {
+      if (e.message === 'SESION') return;
+      idToken = '';
+      $('loginMsg').innerHTML = errorHTML(e);
+    });
+  }
+
+  // Baja el mapa CP->zona una sola vez para resolver el escaneo sin ida y vuelta.
+  function precargarMapaCPs() {
+    api('mapaCPs', {}).then(function (r) {
+      if (r.status === 'OK') { mapaCPs = r.mapa || {}; mapaCPsListo = true; }
+    }).catch(function () { /* si falla, el server resuelve igual al registrar */ });
   }
 
   function sesionVencida() {
@@ -434,17 +577,20 @@
 
   // ---------- navegación ----------
   function switchSec(sec) {
-    ['dashboard', 'escaneo', 'cps', 'tarifas'].forEach(function (s) {
+    ['dashboard', 'escaneo', 'historial', 'financiero', 'quincenas', 'cps', 'tarifas'].forEach(function (s) {
       $('sec-' + s).classList.toggle('hidden', s !== sec);
       $('nav-' + s).classList.toggle('on', s === sec);
     });
     secActual = sec;
     if (sec === 'dashboard') loadDashboard(false);
-    if (sec === 'tarifas') loadTarifas();
-    if (sec === 'escaneo') { cargarUltimos(); focoScan(); }
+    if (sec === 'escaneo') { renderUltimos(); focoScan(); }
+    if (sec === 'historial') loadHistorial(false);
+    if (sec === 'financiero') loadFinanciero(false);
+    if (sec === 'quincenas') loadQuincenas(false);
+    if (sec === 'tarifas') loadTarifas(false);
   }
 
-  // ================== ESCANEO ==================
+  // ================== ESCANEO (UI OPTIMISTA / ASÍNCRONO) ==================
   function focoScan() {
     if (secActual === 'escaneo' && !$('stepScan').classList.contains('hidden')) {
       setTimeout(function () { $('inpScan').focus(); }, 100);
@@ -453,10 +599,7 @@
 
   function extraerEnvio(text) {
     text = String(text || '').trim();
-    try {
-      var o = JSON.parse(text);
-      if (o && o.id) return String(o.id).replace(/\D/g, '');
-    } catch (e) {}
+    try { var o = JSON.parse(text); if (o && o.id) return String(o.id).replace(/\D/g, ''); } catch (e) {}
     var m = text.match(/id\D{0,4}(\d{8,})/i);
     if (m) return m[1];
     if (/^\d{8,}$/.test(text)) return text;
@@ -472,9 +615,7 @@
     $('inpScan').value = '';
     if (!id) {
       $('scanMsg').innerHTML = '<div class="msg msg-err">No pude extraer el número de envío. Probá de nuevo.</div>';
-      beep(220, 300);
-      focoScan();
-      return;
+      beep(220, 300); focoScan(); return;
     }
     $('scanMsg').innerHTML = '';
     beep(880, 120);
@@ -482,6 +623,12 @@
   }
 
   function gotEnvio(id) {
+    // Dup en la misma sesión: aviso instantáneo sin ir al server
+    var dupLocal = escaneosLocal.filter(function (r) { return r.envio === id && r.sync !== 'error'; })[0];
+    if (dupLocal) {
+      $('scanMsg').innerHTML = '<div class="msg msg-err">🚫 Envío ' + esc(id) + ' YA escaneado en esta sesión (' + esc(dupLocal.fecha) + ').</div>';
+      beep(220, 400); focoScan(); return;
+    }
     envioId = id;
     $('envioShow').textContent = id;
     hide('stepScan'); show('stepCP');
@@ -494,12 +641,10 @@
   }
 
   function ocultarCordonBox() {
-    hide('cordonBox');
-    cordonManual = '';
+    hide('cordonBox'); cordonManual = '';
     document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
   }
 
-  // Tocar una Matanza registra directo (sin botón Confirmar)
   function tapMatanza(cual) {
     matanza = cual;
     $('matN').classList.toggle('on', cual === 'NORTE');
@@ -510,7 +655,6 @@
     confirmar();
   }
 
-  // Elegir cordón (CP desconocido) registra directo
   function pickCordon(z, btn) {
     cordonManual = z;
     document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
@@ -518,101 +662,150 @@
     confirmar();
   }
 
-  function confirmar() {
-    if (saving) return;
-    if (!matanza) {
-      var cp = $('inpCP').value.replace(/\D/g, '');
-      if (cp.length < 4) { setMsg('Ingresá el CP (4 dígitos) o marcá La Matanza.', 'msg-err'); return; }
-    }
-    if (!$('cordonBox').classList.contains('hidden') && !cordonManual) {
-      setMsg('Elegí un cordón para este CP.', 'msg-err'); return;
-    }
-    saving = true;
-    $('btnConfirm').disabled = true;
-    setMsg('Guardando…', 'msg-warn');
-
-    api('registrar', {
-      envioId: envioId,
-      cp: $('inpCP').value,
-      matanza: matanza,
-      cordonManual: cordonManual
-    }).then(onRespRegistro).catch(function (e) {
-      saving = false; $('btnConfirm').disabled = false;
-      if (e.message !== 'SESION') { setMsg('Error de conexión: ' + e.message + '. Reintentá.', 'msg-err'); beep(220, 300); }
-    });
+  // Resuelve zona localmente. Devuelve {zona, cpMostrar} o {desconocido:true} o {error}
+  function resolverZonaLocal() {
+    if (matanza === 'NORTE') return { zona: 'C1', cpMostrar: 'LA MATANZA NORTE' };
+    if (matanza === 'SUR')   return { zona: 'C2', cpMostrar: 'LA MATANZA SUR' };
+    if (matanza === 'MATANZA') return { error: 'Elegí NORTE o SUR para La Matanza.' };
+    var cp = $('inpCP').value.replace(/\D/g, '');
+    if (cp.length < 4) return { error: 'Ingresá el CP (4 dígitos) o marcá La Matanza.' };
+    var cpNorm = String(parseInt(cp, 10));
+    if (cordonManual) return { zona: cordonManual, cpMostrar: cpNorm };
+    var zona = mapaCPs[cpNorm];
+    if (ZONAS.indexOf(zona) !== -1) return { zona: zona, cpMostrar: cpNorm };
+    return { desconocido: true, cp: cpNorm };
   }
 
-  function onRespRegistro(r) {
-    saving = false;
-    $('btnConfirm').disabled = false;
-
-    if (r.status === 'OK') {
-      beep(1320, 150);
-      $('cntHoy').textContent = r.hoy;
-      if (r.ultimos) renderUltimos(r.ultimos);
-      $('okDetail').textContent = 'Envío ' + r.envioId + ' • ' + r.cp + ' • Zona ' + r.zona + ' • ' + money(r.costo);
-      hide('stepCP'); show('stepOK');
-      dashCache = null;
-      setTimeout(resetScan, 1300);
-
-    } else if (r.status === 'DUPLICADO') {
-      beep(220, 400);
-      // si venía de tocar Matanza, destildarla para que pueda reintentar
-      matanza = ''; $('inpCP').disabled = false;
-      ['matN', 'matM', 'matS'].forEach(function (b) { $(b).classList.remove('on'); });
-      setMsg('🚫 <b>YA REGISTRADO</b><br>el ' + r.fecha + '<br>por ' + r.operario, 'msg-err');
-
-    } else if (r.status === 'CP_DESCONOCIDO') {
-      beep(440, 200);
-      if (r.base === 0) {
-        $('cpDescMsg').innerHTML = '⚠️ <b>La base de CPs está VACÍA.</b> Importá Config_CPs.csv en la pestaña Config_CPs del Sheet. Mientras tanto, elegí el cordón a mano:';
-      } else {
-        $('cpDescMsg').innerHTML = '⚠️ El CP <b>' + r.cp + '</b> no está en la base (' + r.base + ' CPs cargados).<br>Corregí el CP de arriba, o elegí el cordón para agregarlo:';
-      }
+  function confirmar() {
+    if (saving) return;
+    var res = resolverZonaLocal();
+    if (res.error) { setMsg(res.error, 'msg-err'); return; }
+    if (res.desconocido) {
+      // CP no está en el mapa local -> pedir cordón (único caso interactivo)
+      $('cpDescMsg').innerHTML = mapaCPsListo
+        ? '⚠️ El CP <b>' + esc(res.cp) + '</b> no está en la base. Elegí el cordón para agregarlo:'
+        : '⏳ Todavía cargando la base de CPs. Elegí el cordón a mano o esperá unos segundos:';
       cordonManual = '';
       document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
-      show('cordonBox'); setMsg('', '');
-
-    } else {
-      beep(220, 300);
-      setMsg(r.msg || 'Error desconocido.', 'msg-err');
+      show('cordonBox'); setMsg('', ''); beep(440, 200);
+      return;
     }
+
+    // ---- UI OPTIMISTA: registramos localmente y seguimos ----
+    var ahora = new Date();
+    var payload = { envioId: envioId, cp: $('inpCP').value, matanza: matanza, cordonManual: cordonManual };
+    var costo = (tarifasLocal[res.zona] !== undefined) ? tarifasLocal[res.zona] : 0;
+    var rec = {
+      localId: 'loc' + (localSeq++), envio: envioId, cp: res.cpMostrar, zona: res.zona,
+      costo: costo, fecha: ddMM(ahora) + ' ' + ('0' + ahora.getHours()).slice(-2) + ':' + ('0' + ahora.getMinutes()).slice(-2),
+      quincena: calcQuincena(ahora), semana: calcSemana(ahora),
+      operario: ($('userLabel').textContent || '').split('@')[0], sync: 'pendiente', payload: payload
+    };
+    escaneosLocal.unshift(rec);
+
+    beep(1320, 150);
+    $('cntHoy').textContent = (parseInt($('cntHoy').textContent, 10) || 0) + 1;
+    dashCache = null; histCache = null; finCache = null; // se recomputan al abrir
+
+    // Confirmación visual y volvemos a escanear YA (sin overlay bloqueante)
+    renderUltimos();
+    resetScan();
+
+    // ---- Persistencia en segundo plano ----
+    enviarEnBackground(rec);
+  }
+
+  function enviarEnBackground(rec) {
+    actualizarPendientesInfo();
+    api('registrar', rec.payload).then(function (r) {
+      if (r.status === 'OK') {
+        rec.sync = 'ok'; rec.costo = r.costo; rec.zona = r.zona; rec.cp = r.cp;
+        if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
+      } else if (r.status === 'DUPLICADO') {
+        rec.sync = 'error'; rec.msg = 'Ya estaba registrado el ' + r.fecha + ' por ' + r.operario;
+        // restamos el conteo optimista que habíamos sumado
+        $('cntHoy').textContent = Math.max(0, (parseInt($('cntHoy').textContent, 10) || 1) - 1);
+        beep(220, 350);
+      } else if (r.status === 'CP_DESCONOCIDO') {
+        rec.sync = 'error'; rec.msg = 'CP no reconocido por el server. Editá y elegí cordón.';
+      } else {
+        rec.sync = 'error'; rec.msg = r.msg || 'Error del servidor.';
+      }
+    }).catch(function (e) {
+      if (e.message === 'SESION') { rec.sync = 'error'; rec.msg = 'Sesión vencida.'; }
+      else { rec.sync = 'error'; rec.msg = 'Sin conexión. Tocá ↻ para reintentar.'; }
+    }).then(function () { renderUltimos(); actualizarPendientesInfo(); });
+  }
+
+  function reintentar(localId) {
+    var rec = escaneosLocal.filter(function (r) { return r.localId === localId; })[0];
+    if (!rec) return;
+    rec.sync = 'pendiente'; rec.msg = '';
+    renderUltimos();
+    enviarEnBackground(rec);
+  }
+
+  function actualizarPendientesInfo() {
+    var p = escaneosLocal.filter(function (r) { return r.sync === 'pendiente'; }).length;
+    var e = escaneosLocal.filter(function (r) { return r.sync === 'error'; }).length;
+    var t = [];
+    if (p) t.push('⏳ ' + p + ' sincronizando');
+    if (e) t.push('<span style="color:var(--rojo)">⚠️ ' + e + ' con error</span>');
+    $('pendientesInfo').innerHTML = t.join(' · ');
   }
 
   function resetScan() {
     envioId = ''; matanza = ''; cordonManual = '';
-    hide('stepCP'); hide('stepOK'); show('stepScan');
+    hide('stepCP'); show('stepScan');
     $('inpCP').disabled = false;
     ['matN', 'matM', 'matS'].forEach(function (b) { $(b).classList.remove('on'); });
-    ocultarCordonBox();
-    setMsg('', '');
-    $('scanMsg').innerHTML = '';
+    ocultarCordonBox(); setMsg('', ''); $('scanMsg').innerHTML = '';
     focoScan();
   }
 
-  // ================== ÚLTIMOS 5 (editar / eliminar) ==================
+  // ================== ÚLTIMOS ESCANEOS (lista local + sync) ==================
   function cargarUltimos() {
-    api('ultimos').then(function (r) {
-      if (r.status === 'OK') renderUltimos(r.ultimos);
+    // Refresca desde el server SOLO los que no son locales pendientes/error de esta sesión
+    api('ultimos', {}).then(function (r) {
+      if (r.status !== 'OK') return;
+      var localesVivos = escaneosLocal.filter(function (x) { return !x.fromServer && x.sync !== 'ok'; });
+      var delServer = (r.ultimos || []).map(function (u) {
+        return { localId: 'srv' + (localSeq++), fecha: u.fecha, envio: u.envio, cp: u.cp,
+                 zona: u.zona, costo: u.costo, operario: u.operario, sync: 'ok', fromServer: true };
+      });
+      // pendientes/errores locales primero, luego lo del server (sin duplicar envíos)
+      var envios = {};
+      escaneosLocal = [];
+      localesVivos.concat(delServer).forEach(function (x) {
+        if (envios[x.envio]) return; envios[x.envio] = 1; escaneosLocal.push(x);
+      });
+      renderUltimos(); actualizarPendientesInfo();
     }).catch(function () {});
   }
 
-  function renderUltimos(arr) {
-    if (!arr || !arr.length) { $('listaUltimos').innerHTML = '<div class="hint">Sin escaneos todavía.</div>'; return; }
-    var h = '<table><tr><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th></th></tr>';
+  function renderUltimos() {
+    var arr = escaneosLocal.slice(0, 12);
+    if (!arr.length) { $('listaUltimos').innerHTML = '<div class="hint">Sin escaneos todavía.</div>'; return; }
+    var h = '<table><tr><th>Estado</th><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th></th></tr>';
     arr.forEach(function (u) {
-      h += '<tr><td>' + u.fecha + '</td><td>' + u.envio + '</td><td>' + u.cp + '</td><td>' + pill(u.zona) +
-           '</td><td class="money">' + money(u.costo) + '</td><td style="text-align:right">' +
-           '<button class="icon-btn" title="Editar" onclick="abrirEdicion(\'' + u.envio + '\')">✏️</button>' +
-           '<button class="icon-btn del" title="Eliminar" onclick="eliminarEnvio(\'' + u.envio + '\')">🗑️</button>' +
-           '</td></tr>';
+      var titulo = u.sync === 'ok' ? 'Sincronizado' : (u.sync === 'pendiente' ? 'Sincronizando…' : (u.msg || 'Error de sync'));
+      var acciones = '';
+      if (u.sync === 'error') acciones += '<button class="icon-btn" title="Reintentar" onclick="reintentar(\'' + u.localId + '\')">↻</button>';
+      acciones += '<button class="icon-btn" title="Editar" onclick="abrirEdicion(\'' + esc(u.envio) + '\')">✏️</button>';
+      acciones += '<button class="icon-btn del" title="Eliminar" onclick="eliminarEnvio(\'' + esc(u.envio) + '\')">🗑️</button>';
+      h += '<tr class="' + (u.sync === 'error' ? 'row-error' : '') + '">' +
+           '<td><span class="dot ' + u.sync + '" title="' + esc(titulo) + '"></span>' +
+              (u.sync === 'error' ? '<span style="font-size:11px;color:var(--rojo)">' + esc(u.msg || 'error') + '</span>' : '') + '</td>' +
+           '<td>' + esc(u.fecha) + '</td><td>' + esc(u.envio) + '</td><td>' + esc(u.cp) + '</td><td>' + pill(u.zona) +
+           '</td><td class="money">' + money(u.costo) + '</td>' +
+           '<td style="text-align:right">' + acciones + '</td></tr>';
     });
     $('listaUltimos').innerHTML = h + '</table>';
   }
 
+  // ---------- editar ----------
   function abrirEdicion(envio) {
-    editandoId = envio;
-    matanzaEdit = ''; cordonEdit = '';
+    editandoId = envio; matanzaEdit = ''; cordonEdit = '';
     $('editEnvioShow').textContent = envio;
     $('inpCPEdit').value = ''; $('inpCPEdit').disabled = false;
     ['matNE', 'matME', 'matSE'].forEach(function (b) { $(b).classList.remove('on'); });
@@ -623,12 +816,7 @@
     $('cardEdit').scrollIntoView({ behavior: 'smooth', block: 'center' });
     setTimeout(function () { $('inpCPEdit').focus(); }, 150);
   }
-
-  function cerrarEdicion() {
-    editandoId = '';
-    hide('cardEdit');
-    focoScan();
-  }
+  function cerrarEdicion() { editandoId = ''; hide('cardEdit'); focoScan(); }
 
   function tapMatanzaEdit(cual) {
     matanzaEdit = (matanzaEdit === cual) ? '' : cual;
@@ -638,7 +826,6 @@
     $('inpCPEdit').disabled = !!matanzaEdit;
     if (matanzaEdit) { $('inpCPEdit').value = ''; hide('cordonBoxEdit'); cordonEdit = ''; }
   }
-
   function pickCordonEdit(z, btn) {
     cordonEdit = z;
     document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
@@ -653,86 +840,248 @@
     }
     $('btnGuardarEdit').disabled = true;
     $('msgEdit').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
-    api('editarEnvio', {
-      envioId: editandoId,
-      cp: $('inpCPEdit').value,
-      matanza: matanzaEdit,
-      cordonManual: cordonEdit
-    }).then(function (r) {
-      $('btnGuardarEdit').disabled = false;
-      if (r.status === 'OK') {
-        beep(1320, 150);
-        if (r.ultimos) renderUltimos(r.ultimos);
-        dashCache = null;
-        $('msgEdit').innerHTML = '<div class="msg msg-ok">✅ Envío actualizado: ' + r.cp + ' • ' + r.zona + ' • ' + money(r.costo) + '</div>';
-        setTimeout(cerrarEdicion, 1200);
-      } else if (r.status === 'CP_DESCONOCIDO') {
-        $('cpDescMsgEdit').innerHTML = '⚠️ El CP <b>' + r.cp + '</b> no está en la base. Elegí el cordón:';
-        cordonEdit = '';
-        document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
-        show('cordonBoxEdit');
-        $('msgEdit').innerHTML = '';
-      } else {
-        $('msgEdit').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
-      }
-    }).catch(function (e) {
-      $('btnGuardarEdit').disabled = false;
-      if (e.message !== 'SESION') $('msgEdit').innerHTML = errorHTML(e);
-    });
+    api('editarEnvio', { envioId: editandoId, cp: $('inpCPEdit').value, matanza: matanzaEdit, cordonManual: cordonEdit })
+      .then(function (r) {
+        $('btnGuardarEdit').disabled = false;
+        if (r.status === 'OK') {
+          beep(1320, 150);
+          // actualizar el registro local
+          escaneosLocal.forEach(function (x) { if (x.envio === editandoId) { x.cp = r.cp; x.zona = r.zona; x.costo = r.costo; x.sync = 'ok'; x.msg = ''; } });
+          if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
+          dashCache = histCache = finCache = null;
+          $('msgEdit').innerHTML = '<div class="msg msg-ok">✅ Actualizado: ' + esc(r.cp) + ' • ' + esc(r.zona) + ' • ' + money(r.costo) + '</div>';
+          renderUltimos();
+          setTimeout(cerrarEdicion, 1000);
+        } else if (r.status === 'CP_DESCONOCIDO') {
+          $('cpDescMsgEdit').innerHTML = '⚠️ El CP <b>' + esc(r.cp) + '</b> no está en la base. Elegí el cordón:';
+          cordonEdit = '';
+          document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
+          show('cordonBoxEdit'); $('msgEdit').innerHTML = '';
+        } else {
+          $('msgEdit').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>';
+        }
+      }).catch(function (e) {
+        $('btnGuardarEdit').disabled = false;
+        if (e.message !== 'SESION') $('msgEdit').innerHTML = errorHTML(e);
+      });
   }
 
   function eliminarEnvio(envio) {
-    if (!confirm('¿Eliminar el envío ' + envio + ' del registro?\nEsta acción queda auditada en el Log.')) return;
+    if (!confirm('¿Eliminar el envío ' + envio + ' del registro?\nQueda auditado en el Log.')) return;
+    // Si es un registro local que nunca llegó al server (error/pendiente), lo saco local sin llamar
+    var rec = escaneosLocal.filter(function (r) { return r.envio === envio; })[0];
+    if (rec && rec.sync === 'error' && !rec.fromServer) {
+      escaneosLocal = escaneosLocal.filter(function (r) { return r.envio !== envio; });
+      renderUltimos(); actualizarPendientesInfo(); return;
+    }
     api('eliminarEnvio', { envioId: envio }).then(function (r) {
       if (r.status === 'OK') {
         beep(660, 120);
-        renderUltimos(r.ultimos);
+        escaneosLocal = escaneosLocal.filter(function (x) { return x.envio !== envio; });
         if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
-        dashCache = null;
-      } else {
-        alert(r.msg || 'No se pudo eliminar.');
-      }
-    }).catch(function (e) {
-      if (e.message !== 'SESION') alert('Error de conexión: ' + e.message);
-    });
+        dashCache = histCache = finCache = null;
+        renderUltimos(); actualizarPendientesInfo();
+      } else { alert(r.msg || 'No se pudo eliminar.'); }
+    }).catch(function (e) { if (e.message !== 'SESION') alert('Error de conexión: ' + e.message); });
   }
 
-  // ================== DASHBOARD ==================
+  // ================== DASHBOARD HOY ==================
   function loadDashboard(force) {
     if (dashCache && !force) { renderDashboard(dashCache); return; }
-    $('tblQuincenas').innerHTML = 'Cargando…';
-    $('tblSemanas').innerHTML = 'Cargando…';
-    $('tblUltimos').innerHTML = 'Cargando…';
-    api('dashboard').then(function (r) {
-      if (r.status !== 'OK') { $('tblQuincenas').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>'; return; }
-      dashCache = r;
+    ['tblUltimos'].forEach(function (id) { $(id).innerHTML = 'Cargando…'; });
+    api('dashboard', {}).then(function (r) {
+      if (r.status !== 'OK') { $('tblUltimos').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>'; return; }
+      dashCache = r; tarifasLocal = r.tarifas || tarifasLocal;
       renderDashboard(r);
-    }).catch(function (e) {
-      if (e.message !== 'SESION') $('tblQuincenas').innerHTML = errorHTML(e);
-    });
+    }).catch(function (e) { if (e.message !== 'SESION') $('tblUltimos').innerHTML = errorHTML(e); });
   }
 
   function renderDashboard(d) {
+    var hoy = d.hoy || { cant: 0, total: 0, zonas: {} };
     $('dQuinAct').textContent = d.quincenaActual || '–';
-    $('dHoyCant').textContent = d.hoy.cant;
-    $('dHoyTotal').textContent = money(d.hoy.total);
-    $('dTotalReg').textContent = d.totalRegistros;
-    $('dTotalCPs').textContent = d.totalCPs;
-    $('tblQuincenas').innerHTML = tablaPeriodos(d.quincenas, 'Quincena');
-    $('tblSemanas').innerHTML = tablaPeriodos(d.semanas, 'Semana');
-    $('tblUltimos').innerHTML = tablaUltimos(d.ultimos);
+    $('dFechaHoy').textContent = ddMMyyyy(new Date());
+    $('dHoyCant').textContent = hoy.cant;
+    $('dHoyTotal').textContent = money(hoy.total);
+    $('dErrores').textContent = d.erroresHoy != null ? d.erroresHoy : 0;
+    $('dTotalCPs').textContent = d.totalCPs != null ? d.totalCPs : '–';
+    ZONAS.forEach(function (z) { $('z' + z).textContent = (hoy.zonas && hoy.zonas[z] != null) ? hoy.zonas[z] : 0; });
+    $('tblUltimos').innerHTML = tablaUltimos(d.ultimos || []);
+  }
+
+  function tablaUltimos(arr) {
+    if (!arr.length) return '<div class="hint">Sin registros todavía.</div>';
+    var h = '<table><tr><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th>Operario</th></tr>';
+    arr.forEach(function (u) {
+      h += '<tr><td>' + esc(u.fecha) + '</td><td>' + esc(u.envio) + '</td><td>' + esc(u.cp) + '</td><td>' + pill(u.zona) +
+           '</td><td class="money">' + money(u.costo) + '</td><td>' + esc(u.operario) + '</td></tr>';
+    });
+    return h + '</table>';
+  }
+
+  // ================== HISTORIAL ==================
+  function loadHistorial(force) {
+    if (histCache && !force) { poblarFiltros(); renderHistorial(); return; }
+    $('tblHistorial').innerHTML = 'Cargando…';
+    api('historial', {}).then(function (r) {
+      if (r.status !== 'OK') { $('tblHistorial').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>'; return; }
+      histCache = r.registros || [];
+      poblarFiltros(); renderHistorial();
+    }).catch(function (e) { if (e.message !== 'SESION') $('tblHistorial').innerHTML = errorHTML(e); });
+  }
+
+  function poblarFiltros() {
+    var qs = {}, ss = {};
+    (histCache || []).forEach(function (r) { if (r.quincena) qs[r.quincena] = 1; if (r.semana) ss[r.semana] = 1; });
+    function opts(sel, keys) {
+      var cur = $(sel).value;
+      var h = '<option value="">' + (sel === 'hQuincena' ? 'Todas las quincenas' : 'Todas las semanas') + '</option>';
+      Object.keys(keys).forEach(function (k) { h += '<option value="' + esc(k) + '">' + esc(k) + '</option>'; });
+      $(sel).innerHTML = h; $(sel).value = cur;
+    }
+    opts('hQuincena', qs); opts('hSemana', ss);
+  }
+
+  function renderHistorial() {
+    if (!histCache) return;
+    var q = $('hBuscar').value.toLowerCase().trim();
+    var fq = $('hQuincena').value, fs = $('hSemana').value, agr = $('hAgrupar').value;
+    var rows = histCache.filter(function (r) {
+      if (fq && r.quincena !== fq) return false;
+      if (fs && r.semana !== fs) return false;
+      if (q) {
+        var blob = (r.cp + ' ' + r.envio + ' ' + r.fecha + ' ' + r.zona + ' ' + r.operario).toLowerCase();
+        if (blob.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+
+    var totCant = rows.length, totMonto = rows.reduce(function (s, r) { return s + r.costo; }, 0);
+    $('hResumen').innerHTML = '<b>' + totCant + '</b> envíos · <b>' + money(totMonto) + '</b>';
+
+    if (!rows.length) { $('tblHistorial').innerHTML = '<div class="hint">Sin resultados con esos filtros.</div>'; return; }
+
+    var head = '<tr><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th>Quincena</th><th>Semana</th><th>Operario</th></tr>';
+    var body = '';
+    function fila(r) {
+      return '<tr><td>' + esc(r.fecha) + '</td><td>' + esc(r.envio) + '</td><td>' + esc(r.cp) + '</td><td>' + pill(r.zona) +
+             '</td><td class="money">' + money(r.costo) + '</td><td>' + esc(r.quincena) + '</td><td>' + esc(r.semana) + '</td><td>' + esc(r.operario) + '</td></tr>';
+    }
+    if (agr) {
+      var grupos = {}, orden = [];
+      rows.forEach(function (r) { var k = r[agr] || '(sin dato)'; if (!grupos[k]) { grupos[k] = []; orden.push(k); } grupos[k].push(r); });
+      orden.forEach(function (k) {
+        var g = grupos[k], m = g.reduce(function (s, r) { return s + r.costo; }, 0);
+        body += '<tr class="grp"><td colspan="4">' + esc(k) + '</td><td class="money">' + money(m) + '</td><td colspan="3">' + g.length + ' envíos</td></tr>';
+        g.forEach(function (r) { body += fila(r); });
+      });
+    } else {
+      rows.forEach(function (r) { body += fila(r); });
+    }
+    $('tblHistorial').innerHTML = '<table>' + head + body + '</table>';
+  }
+
+  // ================== FINANCIERO ==================
+  // Se calcula desde los registros crudos (mismo dataset que Historial) para
+  // poder filtrar por quincena y por rango de fechas del lado del cliente.
+  function loadFinanciero(force) {
+    if (histCache && !force) { poblarFiltrosFin(); renderFinanciero(); return; }
+    ['tblFinZona', 'tblFinQuin', 'tblFinSem'].forEach(function (id) { $(id).innerHTML = 'Cargando…'; });
+    api('historial', {}).then(function (r) {
+      if (r.status !== 'OK') { $('tblFinZona').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>'; return; }
+      histCache = r.registros || [];
+      poblarFiltrosFin(); renderFinanciero();
+    }).catch(function (e) { if (e.message !== 'SESION') $('tblFinZona').innerHTML = errorHTML(e); });
+  }
+
+  function poblarFiltrosFin() {
+    var qs = {};
+    (histCache || []).forEach(function (r) { if (r.quincena) qs[r.quincena] = 1; });
+    var cur = $('fQuincena').value;
+    var h = '<option value="">Todas las quincenas</option>';
+    Object.keys(qs).forEach(function (k) { h += '<option value="' + esc(k) + '">' + esc(k) + '</option>'; });
+    $('fQuincena').innerHTML = h; $('fQuincena').value = cur;
+  }
+
+  function limpiarFiltrosFin() {
+    $('fQuincena').value = ''; $('fDesde').value = ''; $('fHasta').value = '';
+    renderFinanciero();
+  }
+
+  function renderFinanciero() {
+    if (!histCache) return;
+    var fq = $('fQuincena').value, desde = $('fDesde').value, hasta = $('fHasta').value;
+
+    var rows = histCache.filter(function (r) {
+      if (fq && r.quincena !== fq) return false;
+      if (desde && (!r.fechaISO || r.fechaISO < desde)) return false;   // fechaISO = yyyy-MM-dd (comparación lexicográfica válida)
+      if (hasta && (!r.fechaISO || r.fechaISO > hasta)) return false;
+      return true;
+    });
+
+    // Agregación
+    var porZona = { CABA: { c: 0, m: 0 }, C1: { c: 0, m: 0 }, C2: { c: 0, m: 0 }, C3: { c: 0, m: 0 }, OTRA: { c: 0, m: 0 } };
+    var porQ = {}, porS = {}, ordenQ = [], ordenS = [];
+    var totalGeneral = 0, cantGeneral = 0;
+
+    rows.forEach(function (r) {
+      var z = (ZONAS.indexOf(r.zona) !== -1) ? r.zona : 'OTRA';
+      var costo = Number(r.costo) || 0;
+      porZona[z].c++; porZona[z].m += costo;
+      totalGeneral += costo; cantGeneral++;
+
+      var q = r.quincena || 'SIN PERÍODO', s = r.semana || 'SIN SEMANA';
+      if (!porQ[q]) { porQ[q] = nuevoAcumJS(); ordenQ.push(q); }
+      if (!porS[s]) { porS[s] = nuevoAcumJS(); ordenS.push(s); }
+      acumJS(porQ[q], z, costo); acumJS(porS[s], z, costo);
+    });
+
+    // Resumen del filtro
+    var filtroTxt = [];
+    if (fq) filtroTxt.push('Quincena: <b>' + esc(fq) + '</b>');
+    if (desde) filtroTxt.push('desde <b>' + esc(desde.split('-').reverse().join('/')) + '</b>');
+    if (hasta) filtroTxt.push('hasta <b>' + esc(hasta.split('-').reverse().join('/')) + '</b>');
+    $('fResumenFiltro').innerHTML = (filtroTxt.length ? filtroTxt.join(' · ') + ' → ' : 'Todo el histórico → ') +
+      '<b>' + cantGeneral + '</b> envíos · <b>' + money(totalGeneral) + '</b>';
+
+    // Tarjetas
+    $('fTotal').textContent = money(totalGeneral);
+    $('fCant').textContent = cantGeneral;
+    $('fProm').textContent = money(cantGeneral ? Math.round(totalGeneral / cantGeneral) : 0);
+
+    // Por zona
+    var hz = '<table><tr><th>Zona</th><th class="money">Envíos</th><th class="money">Tarifa vigente</th><th class="money">Gasto</th></tr>';
+    ZONAS.forEach(function (z) {
+      var a = porZona[z];
+      hz += '<tr><td>' + pill(z) + '</td><td class="money">' + a.c + '</td><td class="money">' + money(tarifasLocal[z]) + '</td><td class="money"><b>' + money(a.m) + '</b></td></tr>';
+    });
+    if (porZona.OTRA.c) hz += '<tr><td>' + pill('OTRA') + '</td><td class="money">' + porZona.OTRA.c + '</td><td class="money">—</td><td class="money">' + money(porZona.OTRA.m) + '</td></tr>';
+    hz += '<tr class="total"><td>TOTAL</td><td class="money">' + cantGeneral + '</td><td></td><td class="money">' + money(totalGeneral) + '</td></tr>';
+    $('tblFinZona').innerHTML = (rows.length ? hz + '</table>' : '<div class="hint">Sin registros con esos filtros.</div>');
+
+    $('tblFinQuin').innerHTML = tablaPeriodos(serieJS(ordenQ, porQ), 'Quincena');
+    $('tblFinSem').innerHTML = tablaPeriodos(serieJS(ordenS, porS), 'Semana');
+  }
+
+  // Helpers de agregación en JS (espejo de los del backend)
+  function nuevoAcumJS() { var o = { cant: 0, total: 0 }; ['CABA', 'C1', 'C2', 'C3', 'OTRA'].forEach(function (z) { o[z] = { c: 0, m: 0 }; }); return o; }
+  function acumJS(a, z, costo) { a[z].c++; a[z].m += costo; a.cant++; a.total += costo; }
+  function serieJS(orden, data) {
+    return orden.map(function (k) {
+      var a = data[k], z = {};
+      ['CABA', 'C1', 'C2', 'C3', 'OTRA'].forEach(function (zn) { z[zn] = { c: a[zn].c, m: a[zn].m }; });
+      return { nombre: k, zonas: z, cant: a.cant, total: a.total };
+    }); // ya vienen más reciente primero desde el backend
   }
 
   function tablaPeriodos(arr, etiqueta) {
-    if (!arr.length) return '<div class="hint">Sin registros todavía.</div>';
-    var zonas = ['CABA', 'C1', 'C2', 'C3'];
+    if (!arr || !arr.length) return '<div class="hint">Sin registros todavía.</div>';
     var h = '<table><tr><th>' + etiqueta + '</th>';
-    zonas.forEach(function (z) { h += '<th class="money">' + z + '</th>'; });
+    ZONAS.forEach(function (z) { h += '<th class="money">' + z + '</th>'; });
     h += '<th class="money">Envíos</th><th class="money">TOTAL</th></tr>';
     var gt = 0, gc = 0;
     arr.forEach(function (p) {
-      h += '<tr><td><b>' + p.nombre + '</b></td>';
-      zonas.forEach(function (z) {
+      h += '<tr><td><b>' + esc(p.nombre) + '</b></td>';
+      ZONAS.forEach(function (z) {
         var c = p.zonas[z] ? p.zonas[z].c : 0, m = p.zonas[z] ? p.zonas[z].m : 0;
         h += '<td class="money">' + (c ? c + ' · ' + money(m) : '—') + '</td>';
       });
@@ -743,14 +1092,29 @@
     return h + '</table>';
   }
 
-  function tablaUltimos(arr) {
-    if (!arr.length) return '<div class="hint">Sin registros todavía.</div>';
-    var h = '<table><tr><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th>Operario</th></tr>';
-    arr.forEach(function (u) {
-      h += '<tr><td>' + u.fecha + '</td><td>' + u.envio + '</td><td>' + u.cp + '</td><td>' + pill(u.zona) +
-           '</td><td class="money">' + money(u.costo) + '</td><td>' + u.operario + '</td></tr>';
+  // ================== QUINCENAS ==================
+  function loadQuincenas(force) {
+    if (quinCache && !force) { renderQuincenas(quinCache); return; }
+    $('listaQuincenas').innerHTML = 'Cargando…';
+    api('quincenas', { atras: 3, adelante: 8 }).then(function (r) {
+      if (r.status !== 'OK') { $('listaQuincenas').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>'; return; }
+      quinCache = r; renderQuincenas(r);
+    }).catch(function (e) { if (e.message !== 'SESION') $('listaQuincenas').innerHTML = errorHTML(e); });
+  }
+
+  function renderQuincenas(d) {
+    var h = '';
+    (d.lista || []).forEach(function (q) {
+      var esActual = q.nombre === d.actual;
+      h += '<div class="quin-card' + (esActual ? ' actual' : '') + '">' +
+           '<div class="qtit">' + esc(q.nombre) + (esActual ? '<span class="badge-actual">ACTUAL</span>' : '') + '</div>' +
+           '<div class="qsub">Corte (viernes): <b>' + esc(q.corte) + '</b> · inicio: ' + esc(q.inicio) + '</div>';
+      (q.semanas || []).forEach(function (s, i) {
+        h += '<span class="sem">Sem ' + (i + 1) + ': ' + esc(s.inicio) + ' → ' + esc(s.fin) + '</span>';
+      });
+      h += '</div>';
     });
-    return h + '</table>';
+    $('listaQuincenas').innerHTML = h || '<div class="hint">Sin datos.</div>';
   }
 
   // ================== SECCIÓN CPs ==================
@@ -759,19 +1123,17 @@
     if (cp.length < 4) { $('resBuscar').innerHTML = '<div class="msg msg-err">Ingresá un CP de 4 dígitos.</div>'; return; }
     $('resBuscar').innerHTML = '<div class="msg msg-warn">Buscando…</div>';
     api('buscarCP', { cp: cp }).then(function (r) {
-      if (r.status !== 'OK') { $('resBuscar').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>'; return; }
+      if (r.status !== 'OK') { $('resBuscar').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>'; return; }
       if (r.encontrado) {
-        $('resBuscar').innerHTML = '<div class="msg msg-ok">CP <b>' + r.cp + '</b> → ' + pill(r.zona) +
-          (r.localidad ? '<br><span style="font-weight:400">' + r.localidad + '</span>' : '') +
-          (r.notas ? '<br><span style="font-weight:400;font-size:12px">' + r.notas + '</span>' : '') + '</div>';
+        $('resBuscar').innerHTML = '<div class="msg msg-ok">CP <b>' + esc(r.cp) + '</b> → ' + pill(r.zona) +
+          (r.localidad ? '<br><span style="font-weight:400">' + esc(r.localidad) + '</span>' : '') +
+          (r.notas ? '<br><span style="font-weight:400;font-size:12px">' + esc(r.notas) + '</span>' : '') + '</div>';
       } else {
         var extra = (r.base === 0) ? '<br><b>La base está vacía: importá Config_CPs.csv en el Sheet.</b>' : '';
-        $('resBuscar').innerHTML = '<div class="msg msg-warn">El CP <b>' + r.cp + '</b> no está en la base.' + extra + '</div>';
+        $('resBuscar').innerHTML = '<div class="msg msg-warn">El CP <b>' + esc(r.cp) + '</b> no está en la base.' + extra + '</div>';
         $('inpNuevoCP').value = r.cp;
       }
-    }).catch(function (e) {
-      if (e.message !== 'SESION') $('resBuscar').innerHTML = errorHTML(e);
-    });
+    }).catch(function (e) { if (e.message !== 'SESION') $('resBuscar').innerHTML = errorHTML(e); });
   }
 
   function pickCordonNuevo(z, btn) {
@@ -787,48 +1149,45 @@
     $('msgNuevoCP').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
     api('guardarCP', { cp: cp, zona: cordonNuevo }).then(function (r) {
       if (r.status === 'OK') {
-        $('msgNuevoCP').innerHTML = '<div class="msg msg-ok">✅ CP ' + r.cp + ' ' + r.accion + ' con cordón ' + r.zona + '.</div>';
-        $('inpNuevoCP').value = '';
-        cordonNuevo = '';
+        $('msgNuevoCP').innerHTML = '<div class="msg msg-ok">✅ CP ' + esc(r.cp) + ' ' + esc(r.accion) + ' con cordón ' + esc(r.zona) + '.</div>';
+        mapaCPs[String(parseInt(cp, 10))] = r.zona; // mantener el mapa local al día
+        $('inpNuevoCP').value = ''; cordonNuevo = '';
         document.querySelectorAll('.cord-btn.cp-new').forEach(function (b) { b.classList.remove('on'); });
         dashCache = null;
       } else {
-        $('msgNuevoCP').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
+        $('msgNuevoCP').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>';
       }
-    }).catch(function (e) {
-      if (e.message !== 'SESION') $('msgNuevoCP').innerHTML = errorHTML(e);
-    });
+    }).catch(function (e) { if (e.message !== 'SESION') $('msgNuevoCP').innerHTML = errorHTML(e); });
   }
 
   // ================== SECCIÓN TARIFAS ==================
-  function loadTarifas() {
+  function loadTarifas(force) {
+    show('tarifasLoading'); hide('tarifasForm');
     var aplicar = function (t) {
-      ['CABA', 'C1', 'C2', 'C3'].forEach(function (z) {
-        if (t[z] !== undefined) $('t' + z).value = t[z];
-      });
+      tarifasLocal = t || {};
+      ZONAS.forEach(function (z) { if (t[z] !== undefined) $('t' + z).value = t[z]; });
+      hide('tarifasLoading'); show('tarifasForm');
     };
-    if (dashCache) { aplicar(dashCache.tarifas); return; }
-    api('dashboard').then(function (r) {
-      if (r.status !== 'OK') return;
-      dashCache = r;
-      aplicar(r.tarifas);
-    }).catch(function () {});
+    if (dashCache && dashCache.tarifas && !force) { aplicar(dashCache.tarifas); return; }
+    api('estado', {}).then(function (r) {
+      if (r.status !== 'OK') { $('tarifasLoading').innerHTML = 'No se pudieron cargar las tarifas.'; return; }
+      aplicar(r.tarifas || {});
+    }).catch(function (e) { if (e.message !== 'SESION') $('tarifasLoading').innerHTML = 'Error: ' + esc(e.message); });
   }
 
   function guardarTarifas() {
     var payload = {};
-    ['CABA', 'C1', 'C2', 'C3'].forEach(function (z) { payload[z] = Number($('t' + z).value); });
+    ZONAS.forEach(function (z) { payload[z] = Number($('t' + z).value); });
     $('msgTarifas').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
     api('guardarTarifas', payload).then(function (r) {
       if (r.status === 'OK') {
+        tarifasLocal = r.tarifas || payload;
         $('msgTarifas').innerHTML = '<div class="msg msg-ok">✅ Tarifas guardadas' + (r.cambios ? ' (' + r.cambios + ' cambio/s)' : ' (sin cambios)') + '.</div>';
-        dashCache = null;
+        dashCache = finCache = null;
       } else {
-        $('msgTarifas').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
+        $('msgTarifas').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>';
       }
-    }).catch(function (e) {
-      if (e.message !== 'SESION') $('msgTarifas').innerHTML = errorHTML(e);
-    });
+    }).catch(function (e) { if (e.message !== 'SESION') $('msgTarifas').innerHTML = errorHTML(e); });
   }
 
   // ================== eventos ==================
@@ -836,14 +1195,12 @@
     $('inpScan').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); procesarLectura(); }
     });
-    // Por si la pistola no manda Enter: procesar cuando deja de escribir
     var scanTimer = null;
     $('inpScan').addEventListener('input', function () {
       clearTimeout(scanTimer);
       if ($('inpScan').value.length > 10) scanTimer = setTimeout(procesarLectura, 300);
     });
 
-    // CP: al 4° dígito se confirma solo. Si corrige tras "CP desconocido", se limpia el selector.
     $('inpCP').addEventListener('input', function () {
       if (!$('cordonBox').classList.contains('hidden')) ocultarCordonBox();
       setMsg('', '');
@@ -868,6 +1225,7 @@
     $('inpBuscarCP').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); buscarCP(); }
     });
+    $('hBuscar').addEventListener('input', function () { renderHistorial(); });
   });
 </script>
 </body>
