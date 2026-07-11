@@ -219,7 +219,6 @@
 
         <div class="stats">
           <div class="stat azul"><div class="ic">📦</div><div class="num" id="dHoyCant">–</div><div class="lbl">Envíos hoy</div></div>
-          <div class="stat verde"><div class="ic">💰</div><div class="num" id="dHoyTotal">–</div><div class="lbl">Gasto hoy</div></div>
           <div class="stat rojo"><div class="ic">⚠️</div><div class="num" id="dErrores">–</div><div class="lbl">Errores/fallas hoy</div></div>
           <div class="stat"><div class="ic">📮</div><div class="num" id="dTotalCPs">–</div><div class="lbl">CPs en la base</div></div>
         </div>
@@ -464,7 +463,6 @@
   var MS_DIA = 24 * 3600 * 1000;
   var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
   // Versión del backend que ESPERA este frontend. Debe coincidir con VERSION en Code.gs.
-  // Si el deploy quedó viejo, la app muestra un cartel rojo avisándote.
   var BACKEND_VERSION_ESPERADA = '2026-07-11-v4';
   // ====================================================
 
@@ -798,7 +796,7 @@
   function renderUltimos() {
     var arr = escaneosLocal.slice(0, 12);
     if (!arr.length) { $('listaUltimos').innerHTML = '<div class="hint">Sin escaneos todavía.</div>'; return; }
-    var h = '<table><tr><th>Estado</th><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th></th></tr>';
+    var h = '<table><tr><th>Estado</th><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th></th></tr>';
     arr.forEach(function (u) {
       var titulo = u.sync === 'ok' ? 'Sincronizado' : (u.sync === 'pendiente' ? 'Sincronizando…' : (u.msg || 'Error de sync'));
       var acciones = '';
@@ -808,8 +806,7 @@
       h += '<tr class="' + (u.sync === 'error' ? 'row-error' : '') + '">' +
            '<td><span class="dot ' + u.sync + '" title="' + esc(titulo) + '"></span>' +
               (u.sync === 'error' ? '<span style="font-size:11px;color:var(--rojo)">' + esc(u.msg || 'error') + '</span>' : '') + '</td>' +
-           '<td>' + esc(u.fecha) + '</td><td>' + esc(u.envio) + '</td><td>' + esc(u.cp) + '</td><td>' + pill(u.zona) +
-           '</td><td class="money">' + money(u.costo) + '</td>' +
+           '<td>' + esc(u.fecha) + '</td><td>' + esc(u.envio) + '</td><td>' + esc(u.cp) + '</td><td>' + pill(u.zona) + '</td>' +
            '<td style="text-align:right">' + acciones + '</td></tr>';
     });
     $('listaUltimos').innerHTML = h + '</table>';
@@ -913,7 +910,6 @@
     $('dQuinAct').textContent = d.quincenaActual || '–';
     $('dFechaHoy').textContent = ddMMyyyy(new Date());
     $('dHoyCant').textContent = hoy.cant;
-    $('dHoyTotal').textContent = money(hoy.total);
     $('dErrores').textContent = d.erroresHoy != null ? d.erroresHoy : 0;
     $('dTotalCPs').textContent = d.totalCPs != null ? d.totalCPs : '–';
     ZONAS.forEach(function (z) { $('z' + z).textContent = (hoy.zonas && hoy.zonas[z] != null) ? hoy.zonas[z] : 0; });
