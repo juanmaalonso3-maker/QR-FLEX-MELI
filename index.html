@@ -463,7 +463,8 @@
   var MS_DIA = 24 * 3600 * 1000;
   var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
   // Versión del backend que ESPERA este frontend. Debe coincidir con VERSION en Code.gs.
-  var BACKEND_VERSION_ESPERADA = '2026-07-11-v4';
+  var BACKEND_VERSION_ESPERADA = '2026-07-11-v5';
+  var LS_TOKEN = 'flex_idtoken'; // clave de localStorage para persistir la sesión
   // ====================================================
 
   var idToken = '';
@@ -533,34 +534,41 @@
   }
   function errorHTML(e) { return '<div class="msg msg-err">Error de conexión: ' + esc(e && e.message ? e.message : e) + '</div>'; }
 
-  // ---------- Google Sign-In ----------
-  window.addEventListener('load', function initGsi() {
+  // ---------- persistencia de sesión (localStorage) ----------
+  function guardarToken(t) { try { localStorage.setItem(LS_TOKEN, t); } catch (e) {} }
+  function leerToken()      { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
+  function borrarToken()    { try { localStorage.removeItem(LS_TOKEN); } catch (e) {} }
+
+  // Al cargar la página: primero intentamos la sesión guardada; si no sirve, GSI.
+  window.addEventListener('load', function arranque() {
+    var guardado = leerToken();
+    if (guardado) {
+      idToken = guardado;
+      $('loginMsg').innerHTML = '<div class="msg msg-warn">Reanudando sesión…</div>';
+      api('estado', {}).then(function (r) {
+        if (r.status === 'OK') { entrarApp(r); }
+        else { borrarToken(); idToken = ''; initGsi(); }  // token vencido -> login normal
+      }).catch(function () { borrarToken(); idToken = ''; initGsi(); });
+    } else {
+      initGsi();
+    }
+  });
+
+  function initGsi() {
     if (!window.google || !google.accounts) { setTimeout(initGsi, 200); return; }
     google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onCredential, auto_select: true });
     google.accounts.id.renderButton($('gsiBtn'), { theme: 'filled_blue', size: 'large', text: 'signin_with', width: 280 });
-    google.accounts.id.prompt();
-  });
+    google.accounts.id.prompt(); // intento de login silencioso si hay sesión de Google activa
+  }
 
   function onCredential(resp) {
     idToken = resp.credential;
     $('loginMsg').innerHTML = '<div class="msg msg-warn">Verificando…</div>';
     api('estado', {}).then(function (r) {
       if (r.status === 'OK') {
-        $('userLabel').textContent = r.email;
-        $('cntHoy').textContent = r.hoy;
-        tarifasLocal = r.tarifas || {};
-        // Semilla de la lista con los últimos del server (marcados como sincronizados)
-        escaneosLocal = (r.ultimos || []).map(function (u) {
-          return { localId: 'srv' + (localSeq++), fecha: u.fecha, envio: u.envio, cp: u.cp,
-                   zona: u.zona, costo: u.costo, operario: u.operario, sync: 'ok', fromServer: true };
-        });
-        $('loginMsg').innerHTML = '';
-        hide('stepLogin'); show('shell');
-        chequearVersion(r.version);   // avisa si el deploy quedó viejo
-        switchSec('dashboard');
-        precargarMapaCPs();
+        entrarApp(r);
       } else {
-        idToken = '';
+        idToken = ''; borrarToken();
         $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
           esc(r.msg ? r.msg : 'Cuenta no autorizada. Usá tu cuenta @bitek.com.ar.') + '</div>';
       }
@@ -571,6 +579,23 @@
     });
   }
 
+  // Entrada a la app (compartida por login nuevo y sesión reanudada).
+  function entrarApp(r) {
+    guardarToken(idToken);          // persistimos para no re-loguear al cerrar la pestaña
+    $('userLabel').textContent = r.email;
+    $('cntHoy').textContent = r.hoy;
+    tarifasLocal = r.tarifas || {};
+    escaneosLocal = (r.ultimos || []).map(function (u) {
+      return { localId: 'srv' + (localSeq++), fecha: u.fecha, envio: u.envio, cp: u.cp,
+               zona: u.zona, costo: u.costo, operario: u.operario, sync: 'ok', fromServer: true };
+    });
+    $('loginMsg').innerHTML = '';
+    hide('stepLogin'); show('shell');
+    chequearVersion(r.version);
+    switchSec('dashboard');
+    precargarMapaCPs();
+  }
+
   // Baja el mapa CP->zona una sola vez para resolver el escaneo sin ida y vuelta.
   function precargarMapaCPs() {
     api('mapaCPs', {}).then(function (r) {
@@ -579,10 +604,10 @@
   }
 
   function sesionVencida() {
-    idToken = '';
+    idToken = ''; borrarToken();
     hide('shell'); show('stepLogin');
     $('loginMsg').innerHTML = '<div class="msg msg-warn">Tu sesión venció. Volvé a ingresar.</div>';
-    try { google.accounts.id.prompt(); } catch (e) {}
+    try { initGsi(); } catch (e) {}
   }
 
   // ---------- navegación ----------
@@ -609,10 +634,17 @@
 
   function extraerEnvio(text) {
     text = String(text || '').trim();
+
+    // ---- Tipo B: QR de depósito con formato "[DID[ñ [1767526[" ----
+    // Tomamos SIEMPRE el número que sigue a "DID" (ignora LOCAL, CLIENTE, EMPRESA).
+    var did = text.match(/DID\D*?(\d{4,})/i);
+    if (did) return did[1];
+
+    // ---- Tipo A: QR de Mercado Libre (JSON con id, o número largo) ----
     try { var o = JSON.parse(text); if (o && o.id) return String(o.id).replace(/\D/g, ''); } catch (e) {}
     var m = text.match(/id\D{0,4}(\d{8,})/i);
     if (m) return m[1];
-    if (/^\d{8,}$/.test(text)) return text;
+    if (/^\d{6,}$/.test(text)) return text;   // número pelado (>=6 dígitos)
     var d = text.match(/\d{8,}/);
     if (d) return d[0];
     return null;
@@ -709,7 +741,8 @@
       localId: 'loc' + (localSeq++), envio: envioId, cp: res.cpMostrar, zona: res.zona,
       costo: costo, fecha: ddMM(ahora) + ' ' + ('0' + ahora.getHours()).slice(-2) + ':' + ('0' + ahora.getMinutes()).slice(-2),
       quincena: calcQuincena(ahora), semana: calcSemana(ahora),
-      operario: ($('userLabel').textContent || '').split('@')[0], sync: 'pendiente', payload: payload
+      operario: ($('userLabel').textContent || '').split('@')[0], sync: 'pendiente',
+      accion: 'registrar', payload: payload
     };
     escaneosLocal.unshift(rec);
 
@@ -747,12 +780,33 @@
     }).then(function () { renderUltimos(); actualizarPendientesInfo(); });
   }
 
+  // Reintento genérico: sirve para registrar, editar o eliminar según rec.accion.
   function reintentar(localId) {
     var rec = escaneosLocal.filter(function (r) { return r.localId === localId; })[0];
     if (!rec) return;
     rec.sync = 'pendiente'; rec.msg = '';
-    renderUltimos();
-    enviarEnBackground(rec);
+    renderUltimos(); actualizarPendientesInfo();
+    var accion = rec.accion || 'registrar';
+    if (accion === 'registrar') { enviarEnBackground(rec); return; }
+
+    api(accion, rec.payload).then(function (r) {
+      if (r.status === 'OK') {
+        if (accion === 'eliminarEnvio') {
+          escaneosLocal = escaneosLocal.filter(function (x) { return x.localId !== localId; });
+          if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
+        } else { // editarEnvio
+          rec.sync = 'ok'; rec.msg = '';
+          if (r.cp) rec.cp = r.cp; if (r.zona) rec.zona = r.zona; if (r.costo !== undefined) rec.costo = r.costo;
+          if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
+        }
+        dashCache = histCache = finCache = null;
+      } else {
+        rec.sync = 'error'; rec.msg = r.msg || 'No se pudo sincronizar.';
+      }
+    }).catch(function (e) {
+      if (e.message === 'SESION') return;
+      rec.sync = 'error'; rec.msg = 'Sin conexión. Tocá ↻ para reintentar.';
+    }).then(function () { renderUltimos(); actualizarPendientesInfo(); });
   }
 
   function actualizarPendientesInfo() {
@@ -841,57 +895,90 @@
     btn.classList.add('on');
   }
 
-  function guardarEdicion() {
-    if (!editandoId) return;
-    if (!matanzaEdit) {
-      var cp = $('inpCPEdit').value.replace(/\D/g, '');
-      if (cp.length < 4) { $('msgEdit').innerHTML = '<div class="msg msg-err">Ingresá el CP nuevo (4 dígitos) o marcá La Matanza.</div>'; return; }
-    }
-    $('btnGuardarEdit').disabled = true;
-    $('msgEdit').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
-    api('editarEnvio', { envioId: editandoId, cp: $('inpCPEdit').value, matanza: matanzaEdit, cordonManual: cordonEdit })
-      .then(function (r) {
-        $('btnGuardarEdit').disabled = false;
-        if (r.status === 'OK') {
-          beep(1320, 150);
-          // actualizar el registro local
-          escaneosLocal.forEach(function (x) { if (x.envio === editandoId) { x.cp = r.cp; x.zona = r.zona; x.costo = r.costo; x.sync = 'ok'; x.msg = ''; } });
-          if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
-          dashCache = histCache = finCache = null;
-          $('msgEdit').innerHTML = '<div class="msg msg-ok">✅ Actualizado: ' + esc(r.cp) + ' • ' + esc(r.zona) + ' • ' + money(r.costo) + '</div>';
-          renderUltimos();
-          setTimeout(cerrarEdicion, 1000);
-        } else if (r.status === 'CP_DESCONOCIDO') {
-          $('cpDescMsgEdit').innerHTML = '⚠️ El CP <b>' + esc(r.cp) + '</b> no está en la base. Elegí el cordón:';
-          cordonEdit = '';
-          document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
-          show('cordonBoxEdit'); $('msgEdit').innerHTML = '';
-        } else {
-          $('msgEdit').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>';
-        }
-      }).catch(function (e) {
-        $('btnGuardarEdit').disabled = false;
-        if (e.message !== 'SESION') $('msgEdit').innerHTML = errorHTML(e);
-      });
+  // Resuelve zona/cp localmente para la edición (espejo de resolverZonaLocal).
+  function resolverZonaLocalEdit() {
+    if (matanzaEdit === 'NORTE') return { zona: 'C1', cpMostrar: 'LA MATANZA NORTE' };
+    if (matanzaEdit === 'SUR')   return { zona: 'C2', cpMostrar: 'LA MATANZA SUR' };
+    if (matanzaEdit === 'MATANZA') return { error: 'Elegí NORTE o SUR para La Matanza.' };
+    var cp = $('inpCPEdit').value.replace(/\D/g, '');
+    if (cp.length < 4) return { error: 'Ingresá el CP nuevo (4 dígitos) o marcá La Matanza.' };
+    var cpNorm = String(parseInt(cp, 10));
+    if (cordonEdit) return { zona: cordonEdit, cpMostrar: cpNorm };
+    var zona = mapaCPs[cpNorm];
+    if (ZONAS.indexOf(zona) !== -1) return { zona: zona, cpMostrar: cpNorm };
+    return { desconocido: true, cp: cpNorm };
   }
 
+  // Edición OPTIMISTA: aplica el cambio en pantalla al instante y sincroniza en segundo plano.
+  function guardarEdicion() {
+    if (!editandoId) return;
+    var res = resolverZonaLocalEdit();
+    if (res.error) { $('msgEdit').innerHTML = '<div class="msg msg-err">' + esc(res.error) + '</div>'; return; }
+    if (res.desconocido) {
+      $('cpDescMsgEdit').innerHTML = '⚠️ El CP <b>' + esc(res.cp) + '</b> no está en la base. Elegí el cordón:';
+      cordonEdit = '';
+      document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
+      show('cordonBoxEdit'); $('msgEdit').innerHTML = ''; return;
+    }
+
+    var id = editandoId;
+    var payload = { envioId: id, cp: $('inpCPEdit').value, matanza: matanzaEdit, cordonManual: cordonEdit };
+    var costo = (tarifasLocal[res.zona] !== undefined) ? tarifasLocal[res.zona] : 0;
+
+    // Aplicar YA en la lista local y cerrar el editor (sin esperar al server)
+    escaneosLocal.forEach(function (x) {
+      if (x.envio === id) { x.cp = res.cpMostrar; x.zona = res.zona; x.costo = costo; x.sync = 'pendiente'; x.msg = ''; x.accion = 'editarEnvio'; x.payload = payload; }
+    });
+    dashCache = histCache = finCache = null;
+    beep(1320, 150);
+    renderUltimos(); actualizarPendientesInfo();
+    cerrarEdicion();
+
+    // Sincronización en segundo plano
+    api('editarEnvio', payload).then(function (r) {
+      escaneosLocal.forEach(function (x) {
+        if (x.envio !== id) return;
+        if (r.status === 'OK') { x.cp = r.cp; x.zona = r.zona; x.costo = r.costo; x.sync = 'ok'; x.msg = ''; if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy; }
+        else if (r.status === 'CP_DESCONOCIDO') { x.sync = 'error'; x.msg = 'CP no reconocido. Volvé a editar y elegí cordón.'; }
+        else { x.sync = 'error'; x.msg = r.msg || 'No se pudo editar. Tocá ↻.'; }
+      });
+    }).catch(function (e) {
+      if (e.message === 'SESION') return;
+      escaneosLocal.forEach(function (x) { if (x.envio === id) { x.sync = 'error'; x.msg = 'Sin conexión al editar. Tocá ↻.'; } });
+    }).then(function () { renderUltimos(); actualizarPendientesInfo(); });
+  }
+
+  // Borrado OPTIMISTA: saca la fila de la pantalla al instante y borra en la base en segundo plano.
   function eliminarEnvio(envio) {
     if (!confirm('¿Eliminar el envío ' + envio + ' del registro?\nQueda auditado en el Log.')) return;
-    // Si es un registro local que nunca llegó al server (error/pendiente), lo saco local sin llamar
     var rec = escaneosLocal.filter(function (r) { return r.envio === envio; })[0];
-    if (rec && rec.sync === 'error' && !rec.fromServer) {
-      escaneosLocal = escaneosLocal.filter(function (r) { return r.envio !== envio; });
-      renderUltimos(); actualizarPendientesInfo(); return;
-    }
+
+    // Sale de la lista YA
+    escaneosLocal = escaneosLocal.filter(function (r) { return r.envio !== envio; });
+    dashCache = histCache = finCache = null;
+    beep(660, 120);
+    renderUltimos(); actualizarPendientesInfo();
+
+    // Registro local que nunca llegó al server: no hace falta llamar
+    if (rec && rec.sync === 'error' && !rec.fromServer) return;
+
+    // Borrado real en segundo plano
     api('eliminarEnvio', { envioId: envio }).then(function (r) {
-      if (r.status === 'OK') {
-        beep(660, 120);
-        escaneosLocal = escaneosLocal.filter(function (x) { return x.envio !== envio; });
-        if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
-        dashCache = histCache = finCache = null;
-        renderUltimos(); actualizarPendientesInfo();
-      } else { alert(r.msg || 'No se pudo eliminar.'); }
-    }).catch(function (e) { if (e.message !== 'SESION') alert('Error de conexión: ' + e.message); });
+      if (r.status === 'OK') { if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy; }
+      else { reponerBorradoFallido(rec, envio, r.msg || 'No se pudo eliminar.'); }
+    }).catch(function (e) {
+      if (e.message === 'SESION') return;
+      reponerBorradoFallido(rec, envio, 'Sin conexión al eliminar.');
+    });
+  }
+
+  // Si el borrado en la base falla, reponemos la fila marcada con error (con ↻ para reintentar).
+  function reponerBorradoFallido(rec, envio, msg) {
+    if (!rec) rec = { localId: 'del' + (localSeq++), envio: envio, cp: '', zona: '', costo: 0, fecha: '', fromServer: true };
+    rec.sync = 'error'; rec.msg = msg + ' Tocá ↻ o el tacho de nuevo.';
+    rec.accion = 'eliminarEnvio'; rec.payload = { envioId: envio };
+    if (!escaneosLocal.some(function (x) { return x.envio === envio; })) escaneosLocal.unshift(rec);
+    renderUltimos(); actualizarPendientesInfo();
   }
 
   // ================== DASHBOARD HOY ==================
@@ -930,11 +1017,10 @@
     return h + '</table>';
   }
 
-  // Compara la versión que devuelve el backend con la que espera este frontend.
+  // Compara la versión del backend con la que espera este frontend.
   function chequearVersion(vBackend) {
-    var footVer = ' · backend v' + (vBackend || '?');
     var lbl = $('userLabel');
-    if (lbl && lbl.textContent.indexOf('backend v') === -1) lbl.textContent += footVer;
+    if (lbl && lbl.textContent.indexOf('backend v') === -1) lbl.textContent += ' · backend v' + (vBackend || '?');
     if (!vBackend) {
       mostrarBannerVersion('⚠️ El backend no reporta versión: es un deploy VIEJO. Republicá con "Nueva versión".');
     } else if (vBackend !== BACKEND_VERSION_ESPERADA) {
@@ -945,10 +1031,7 @@
       $('versionBanner').classList.add('hidden');
     }
   }
-  function mostrarBannerVersion(html) {
-    var b = $('versionBanner');
-    b.innerHTML = html; b.classList.remove('hidden');
-  }
+  function mostrarBannerVersion(html) { var b = $('versionBanner'); b.innerHTML = html; b.classList.remove('hidden'); }
 
   function tablaUltimos(arr) {
     if (!arr.length) return '<div class="hint">Sin registros todavía.</div>';
