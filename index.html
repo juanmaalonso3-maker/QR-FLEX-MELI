@@ -27,7 +27,7 @@
     .login-card p { color: var(--gris); font-size: 14px; margin-bottom: 24px; }
     #gsiBtn { display: flex; justify-content: center; }
 
-    /* ============ LAYOUT ============ */
+    /* ============ LAYOUT (menú a la izquierda) ============ */
     #shell { display: flex; min-height: 100vh; }
 
     .sidebar { width: 232px; background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar2) 100%);
@@ -82,9 +82,9 @@
     .envio-badge { background: #f0fdf4; border: 2px solid var(--verde); color: #15803d; border-radius: 12px;
                    padding: 12px; text-align: center; font-size: 19px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
 
-    .matanza { display: flex; gap: 10px; margin: 12px 0; }
-    .mat-btn { flex: 1; padding: 13px 6px; border: 2px solid var(--borde); border-radius: 12px; background: #fff;
-               font-size: 13px; font-weight: 700; color: var(--gris); font-family: inherit; cursor: pointer; transition: all .15s; }
+    .matanza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+    .mat-btn { padding: 13px 4px; border: 2px solid var(--borde); border-radius: 12px; background: #fff;
+               font-size: 12px; font-weight: 700; color: var(--gris); font-family: inherit; cursor: pointer; transition: all .15s; }
     .mat-btn.on { border-color: var(--naranja); background: #fff7ed; color: var(--naranja); }
 
     .cordones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
@@ -123,6 +123,11 @@
     .z-C2 { background: #fff7ed; color: var(--naranja); }
     .z-C3 { background: #fef2f2; color: var(--rojo); }
     .z-OTRA, .z- { background: #f1f5f9; color: var(--gris); }
+
+    .icon-btn { border: none; background: #f1f5f9; border-radius: 8px; padding: 6px 9px; font-size: 14px;
+                cursor: pointer; margin-left: 4px; transition: all .15s; }
+    .icon-btn:hover { background: #e2e8f0; }
+    .icon-btn.del:hover { background: #fee2e2; }
 
     .refresh-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .refresh-row h2 { margin: 0; }
@@ -213,12 +218,13 @@
         <div id="stepCP" class="card hidden">
           <div class="envio-badge">Envío: <span id="envioShow"></span></div>
 
-          <label class="fld">Código Postal de destino</label>
+          <label class="fld">Código Postal de destino (al 4° dígito se confirma solo)</label>
           <input class="field big" id="inpCP" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" autocomplete="off">
 
           <div class="matanza">
-            <button class="mat-btn" id="matN" onclick="toggleMatanza('NORTE')">LA MATANZA NORTE</button>
-            <button class="mat-btn" id="matS" onclick="toggleMatanza('SUR')">LA MATANZA SUR</button>
+            <button class="mat-btn" id="matN" onclick="tapMatanza('NORTE')">LA MATANZA<br>NORTE</button>
+            <button class="mat-btn" id="matM" onclick="tapMatanza('MATANZA')">LA MATANZA</button>
+            <button class="mat-btn" id="matS" onclick="tapMatanza('SUR')">LA MATANZA<br>SUR</button>
           </div>
 
           <div id="cordonBox" class="hidden">
@@ -246,6 +252,41 @@
         </div>
 
         <div class="counter">Registrados hoy por vos: <b id="cntHoy">–</b></div>
+
+        <!-- Últimos 5 escaneos con editar/eliminar -->
+        <div class="card">
+          <h2 class="sec-title">🕐 Últimos 5 escaneos</h2>
+          <div class="tbl-wrap" id="listaUltimos">Cargando…</div>
+        </div>
+
+        <!-- Editor de un escaneo -->
+        <div id="cardEdit" class="card hidden">
+          <h2 class="sec-title">✏️ Editando envío <span id="editEnvioShow"></span></h2>
+
+          <label class="fld">Nuevo Código Postal</label>
+          <input class="field big" id="inpCPEdit" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" autocomplete="off">
+
+          <div class="matanza">
+            <button class="mat-btn me" id="matNE" onclick="tapMatanzaEdit('NORTE')">LA MATANZA<br>NORTE</button>
+            <button class="mat-btn me" id="matME" onclick="tapMatanzaEdit('MATANZA')">LA MATANZA</button>
+            <button class="mat-btn me" id="matSE" onclick="tapMatanzaEdit('SUR')">LA MATANZA<br>SUR</button>
+          </div>
+
+          <div id="cordonBoxEdit" class="hidden">
+            <div class="msg msg-warn" id="cpDescMsgEdit"></div>
+            <div class="cordones">
+              <button class="cord-btn cb-edit" onclick="pickCordonEdit('CABA', this)">CABA</button>
+              <button class="cord-btn cb-edit" onclick="pickCordonEdit('C1', this)">C1</button>
+              <button class="cord-btn cb-edit" onclick="pickCordonEdit('C2', this)">C2</button>
+              <button class="cord-btn cb-edit" onclick="pickCordonEdit('C3', this)">C3</button>
+            </div>
+          </div>
+
+          <div id="msgEdit"></div>
+
+          <button class="btn btn-green" id="btnGuardarEdit" onclick="guardarEdicion()">💾 Guardar cambios</button>
+          <button class="btn btn-gray" onclick="cerrarEdicion()" style="margin-top:10px">Cancelar</button>
+        </div>
       </div>
 
       <!-- ========== CPs ========== -->
@@ -314,6 +355,9 @@
   var saving = false;
   var secActual = 'dashboard';
   var dashCache = null;
+  var editandoId = '';
+  var matanzaEdit = '';
+  var cordonEdit = '';
 
   // ---------- utilidades ----------
   function $(id) { return document.getElementById(id); }
@@ -365,9 +409,10 @@
         if (r.status === 'OK') {
           $('userLabel').textContent = r.email;
           $('cntHoy').textContent = r.hoy;
+          if (r.ultimos) renderUltimos(r.ultimos);
           $('loginMsg').innerHTML = '';
           hide('stepLogin'); show('shell');
-          switchSec('dashboard'); // la app arranca en el Dashboard
+          switchSec('dashboard'); // arranca en el Dashboard
         } else {
           idToken = '';
           $('loginMsg').innerHTML = '<div class="msg msg-err">⛔ ' +
@@ -396,10 +441,10 @@
     secActual = sec;
     if (sec === 'dashboard') loadDashboard(false);
     if (sec === 'tarifas') loadTarifas();
-    if (sec === 'escaneo') focoScan();
+    if (sec === 'escaneo') { cargarUltimos(); focoScan(); }
   }
 
-  // ================== ESCANEO (pistola lectora / manual) ==================
+  // ================== ESCANEO ==================
   function focoScan() {
     if (secActual === 'escaneo' && !$('stepScan').classList.contains('hidden')) {
       setTimeout(function () { $('inpScan').focus(); }, 100);
@@ -442,7 +487,7 @@
     hide('stepScan'); show('stepCP');
     matanza = ''; cordonManual = '';
     $('inpCP').value = ''; $('inpCP').disabled = false;
-    $('matN').classList.remove('on'); $('matS').classList.remove('on');
+    ['matN', 'matM', 'matS'].forEach(function (b) { $(b).classList.remove('on'); });
     ocultarCordonBox();
     setMsg('', '');
     setTimeout(function () { $('inpCP').focus(); }, 120);
@@ -454,18 +499,23 @@
     document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
   }
 
-  function toggleMatanza(cual) {
-    matanza = (matanza === cual) ? '' : cual;
-    $('matN').classList.toggle('on', matanza === 'NORTE');
-    $('matS').classList.toggle('on', matanza === 'SUR');
-    $('inpCP').disabled = !!matanza;
-    if (matanza) { $('inpCP').value = ''; ocultarCordonBox(); setMsg('', ''); }
+  // Tocar una Matanza registra directo (sin botón Confirmar)
+  function tapMatanza(cual) {
+    matanza = cual;
+    $('matN').classList.toggle('on', cual === 'NORTE');
+    $('matM').classList.toggle('on', cual === 'MATANZA');
+    $('matS').classList.toggle('on', cual === 'SUR');
+    $('inpCP').value = ''; $('inpCP').disabled = true;
+    ocultarCordonBox();
+    confirmar();
   }
 
+  // Elegir cordón (CP desconocido) registra directo
   function pickCordon(z, btn) {
     cordonManual = z;
     document.querySelectorAll('.cord-btn.cb-scan').forEach(function (b) { b.classList.remove('on'); });
     btn.classList.add('on');
+    confirmar();
   }
 
   function confirmar() {
@@ -499,6 +549,7 @@
     if (r.status === 'OK') {
       beep(1320, 150);
       $('cntHoy').textContent = r.hoy;
+      if (r.ultimos) renderUltimos(r.ultimos);
       $('okDetail').textContent = 'Envío ' + r.envioId + ' • ' + r.cp + ' • Zona ' + r.zona + ' • ' + money(r.costo);
       hide('stepCP'); show('stepOK');
       dashCache = null;
@@ -506,12 +557,15 @@
 
     } else if (r.status === 'DUPLICADO') {
       beep(220, 400);
+      // si venía de tocar Matanza, destildarla para que pueda reintentar
+      matanza = ''; $('inpCP').disabled = false;
+      ['matN', 'matM', 'matS'].forEach(function (b) { $(b).classList.remove('on'); });
       setMsg('🚫 <b>YA REGISTRADO</b><br>el ' + r.fecha + '<br>por ' + r.operario, 'msg-err');
 
     } else if (r.status === 'CP_DESCONOCIDO') {
       beep(440, 200);
       if (r.base === 0) {
-        $('cpDescMsg').innerHTML = '⚠️ <b>La base de CPs está VACÍA.</b> Importá el archivo Config_CPs.csv en la pestaña Config_CPs del Sheet. Mientras tanto podés elegir el cordón a mano:';
+        $('cpDescMsg').innerHTML = '⚠️ <b>La base de CPs está VACÍA.</b> Importá Config_CPs.csv en la pestaña Config_CPs del Sheet. Mientras tanto, elegí el cordón a mano:';
       } else {
         $('cpDescMsg').innerHTML = '⚠️ El CP <b>' + r.cp + '</b> no está en la base (' + r.base + ' CPs cargados).<br>Corregí el CP de arriba, o elegí el cordón para agregarlo:';
       }
@@ -528,10 +582,119 @@
   function resetScan() {
     envioId = ''; matanza = ''; cordonManual = '';
     hide('stepCP'); hide('stepOK'); show('stepScan');
+    $('inpCP').disabled = false;
+    ['matN', 'matM', 'matS'].forEach(function (b) { $(b).classList.remove('on'); });
     ocultarCordonBox();
     setMsg('', '');
     $('scanMsg').innerHTML = '';
     focoScan();
+  }
+
+  // ================== ÚLTIMOS 5 (editar / eliminar) ==================
+  function cargarUltimos() {
+    api('ultimos').then(function (r) {
+      if (r.status === 'OK') renderUltimos(r.ultimos);
+    }).catch(function () {});
+  }
+
+  function renderUltimos(arr) {
+    if (!arr || !arr.length) { $('listaUltimos').innerHTML = '<div class="hint">Sin escaneos todavía.</div>'; return; }
+    var h = '<table><tr><th>Fecha</th><th>Envío</th><th>CP</th><th>Zona</th><th class="money">Costo</th><th></th></tr>';
+    arr.forEach(function (u) {
+      h += '<tr><td>' + u.fecha + '</td><td>' + u.envio + '</td><td>' + u.cp + '</td><td>' + pill(u.zona) +
+           '</td><td class="money">' + money(u.costo) + '</td><td style="text-align:right">' +
+           '<button class="icon-btn" title="Editar" onclick="abrirEdicion(\'' + u.envio + '\')">✏️</button>' +
+           '<button class="icon-btn del" title="Eliminar" onclick="eliminarEnvio(\'' + u.envio + '\')">🗑️</button>' +
+           '</td></tr>';
+    });
+    $('listaUltimos').innerHTML = h + '</table>';
+  }
+
+  function abrirEdicion(envio) {
+    editandoId = envio;
+    matanzaEdit = ''; cordonEdit = '';
+    $('editEnvioShow').textContent = envio;
+    $('inpCPEdit').value = ''; $('inpCPEdit').disabled = false;
+    ['matNE', 'matME', 'matSE'].forEach(function (b) { $(b).classList.remove('on'); });
+    hide('cordonBoxEdit');
+    document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
+    $('msgEdit').innerHTML = '';
+    show('cardEdit');
+    $('cardEdit').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(function () { $('inpCPEdit').focus(); }, 150);
+  }
+
+  function cerrarEdicion() {
+    editandoId = '';
+    hide('cardEdit');
+    focoScan();
+  }
+
+  function tapMatanzaEdit(cual) {
+    matanzaEdit = (matanzaEdit === cual) ? '' : cual;
+    $('matNE').classList.toggle('on', matanzaEdit === 'NORTE');
+    $('matME').classList.toggle('on', matanzaEdit === 'MATANZA');
+    $('matSE').classList.toggle('on', matanzaEdit === 'SUR');
+    $('inpCPEdit').disabled = !!matanzaEdit;
+    if (matanzaEdit) { $('inpCPEdit').value = ''; hide('cordonBoxEdit'); cordonEdit = ''; }
+  }
+
+  function pickCordonEdit(z, btn) {
+    cordonEdit = z;
+    document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
+    btn.classList.add('on');
+  }
+
+  function guardarEdicion() {
+    if (!editandoId) return;
+    if (!matanzaEdit) {
+      var cp = $('inpCPEdit').value.replace(/\D/g, '');
+      if (cp.length < 4) { $('msgEdit').innerHTML = '<div class="msg msg-err">Ingresá el CP nuevo (4 dígitos) o marcá La Matanza.</div>'; return; }
+    }
+    $('btnGuardarEdit').disabled = true;
+    $('msgEdit').innerHTML = '<div class="msg msg-warn">Guardando…</div>';
+    api('editarEnvio', {
+      envioId: editandoId,
+      cp: $('inpCPEdit').value,
+      matanza: matanzaEdit,
+      cordonManual: cordonEdit
+    }).then(function (r) {
+      $('btnGuardarEdit').disabled = false;
+      if (r.status === 'OK') {
+        beep(1320, 150);
+        if (r.ultimos) renderUltimos(r.ultimos);
+        dashCache = null;
+        $('msgEdit').innerHTML = '<div class="msg msg-ok">✅ Envío actualizado: ' + r.cp + ' • ' + r.zona + ' • ' + money(r.costo) + '</div>';
+        setTimeout(cerrarEdicion, 1200);
+      } else if (r.status === 'CP_DESCONOCIDO') {
+        $('cpDescMsgEdit').innerHTML = '⚠️ El CP <b>' + r.cp + '</b> no está en la base. Elegí el cordón:';
+        cordonEdit = '';
+        document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
+        show('cordonBoxEdit');
+        $('msgEdit').innerHTML = '';
+      } else {
+        $('msgEdit').innerHTML = '<div class="msg msg-err">' + (r.msg || 'Error') + '</div>';
+      }
+    }).catch(function (e) {
+      $('btnGuardarEdit').disabled = false;
+      if (e.message !== 'SESION') $('msgEdit').innerHTML = errorHTML(e);
+    });
+  }
+
+  function eliminarEnvio(envio) {
+    if (!confirm('¿Eliminar el envío ' + envio + ' del registro?\nEsta acción queda auditada en el Log.')) return;
+    api('eliminarEnvio', { envioId: envio }).then(function (r) {
+      if (r.status === 'OK') {
+        beep(660, 120);
+        renderUltimos(r.ultimos);
+        if (r.hoy !== undefined) $('cntHoy').textContent = r.hoy;
+        dashCache = null;
+      } else {
+        alert(r.msg || 'No se pudo eliminar.');
+      }
+    }).catch(function (e) {
+      if (e.message !== 'SESION') alert('Error de conexión: ' + e.message);
+    });
   }
 
   // ================== DASHBOARD ==================
@@ -679,15 +842,29 @@
       clearTimeout(scanTimer);
       if ($('inpScan').value.length > 10) scanTimer = setTimeout(procesarLectura, 300);
     });
-    $('inpCP').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
-    });
-    // FIX: si el operario corrige el CP después del aviso "CP desconocido",
-    // se limpia el selector de cordón y puede confirmar con el CP nuevo.
+
+    // CP: al 4° dígito se confirma solo. Si corrige tras "CP desconocido", se limpia el selector.
     $('inpCP').addEventListener('input', function () {
       if (!$('cordonBox').classList.contains('hidden')) ocultarCordonBox();
       setMsg('', '');
+      var cp = $('inpCP').value.replace(/\D/g, '');
+      if (cp.length === 4 && !matanza) setTimeout(confirmar, 120);
     });
+    $('inpCP').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+    });
+
+    $('inpCPEdit').addEventListener('input', function () {
+      if (!$('cordonBoxEdit').classList.contains('hidden')) {
+        hide('cordonBoxEdit'); cordonEdit = '';
+        document.querySelectorAll('.cord-btn.cb-edit').forEach(function (b) { b.classList.remove('on'); });
+      }
+      $('msgEdit').innerHTML = '';
+    });
+    $('inpCPEdit').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); guardarEdicion(); }
+    });
+
     $('inpBuscarCP').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); buscarCP(); }
     });
