@@ -204,6 +204,9 @@
 
     <main>
 
+      <!-- Aviso de backend desactualizado (se muestra solo si la versión no coincide) -->
+      <div id="versionBanner" class="msg msg-err hidden" style="text-align:left"></div>
+
       <!-- ========== DASHBOARD HOY ========== -->
       <div id="sec-dashboard" class="sec">
         <div class="refresh-row">
@@ -460,6 +463,9 @@
   var CORTE_ANCLA = new Date(2026, 5, 19);
   var MS_DIA = 24 * 3600 * 1000;
   var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
+  // Versión del backend que ESPERA este frontend. Debe coincidir con VERSION en Code.gs.
+  // Si el deploy quedó viejo, la app muestra un cartel rojo avisándote.
+  var BACKEND_VERSION_ESPERADA = '2026-07-11-v4';
   // ====================================================
 
   var idToken = '';
@@ -552,6 +558,7 @@
         });
         $('loginMsg').innerHTML = '';
         hide('stepLogin'); show('shell');
+        chequearVersion(r.version);   // avisa si el deploy quedó viejo
         switchSec('dashboard');
         precargarMapaCPs();
       } else {
@@ -912,6 +919,7 @@
     ZONAS.forEach(function (z) { $('z' + z).textContent = (hoy.zonas && hoy.zonas[z] != null) ? hoy.zonas[z] : 0; });
     $('tblOperarios').innerHTML = tablaOperarios(d.operariosHoy || []);
     $('tblUltimos').innerHTML = tablaUltimos(d.ultimos || []);
+    chequearVersion(d.version);
   }
 
   function tablaOperarios(arr) {
@@ -924,6 +932,26 @@
     });
     h += '<tr class="total"><td>TOTAL</td><td class="money">' + tc + '</td><td class="money">' + money(tm) + '</td></tr>';
     return h + '</table>';
+  }
+
+  // Compara la versión que devuelve el backend con la que espera este frontend.
+  function chequearVersion(vBackend) {
+    var footVer = ' · backend v' + (vBackend || '?');
+    var lbl = $('userLabel');
+    if (lbl && lbl.textContent.indexOf('backend v') === -1) lbl.textContent += footVer;
+    if (!vBackend) {
+      mostrarBannerVersion('⚠️ El backend no reporta versión: es un deploy VIEJO. Republicá con "Nueva versión".');
+    } else if (vBackend !== BACKEND_VERSION_ESPERADA) {
+      mostrarBannerVersion('⚠️ Backend desactualizado: el deploy responde <b>v' + esc(vBackend) +
+        '</b> pero este frontend espera <b>v' + esc(BACKEND_VERSION_ESPERADA) +
+        '</b>. Pegaste el código pero falta <b>Implementar → Nueva versión</b>.');
+    } else {
+      $('versionBanner').classList.add('hidden');
+    }
+  }
+  function mostrarBannerVersion(html) {
+    var b = $('versionBanner');
+    b.innerHTML = html; b.classList.remove('hidden');
   }
 
   function tablaUltimos(arr) {
