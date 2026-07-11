@@ -232,6 +232,11 @@
         </div>
 
         <div class="card">
+          <h2 class="sec-title">👥 Por operario (hoy) · todos los usuarios</h2>
+          <div class="tbl-wrap" id="tblOperarios">Cargando…</div>
+        </div>
+
+        <div class="card">
           <h2 class="sec-title">🕐 Últimos registros</h2>
           <div class="tbl-wrap" id="tblUltimos">Cargando…</div>
         </div>
@@ -905,7 +910,20 @@
     $('dErrores').textContent = d.erroresHoy != null ? d.erroresHoy : 0;
     $('dTotalCPs').textContent = d.totalCPs != null ? d.totalCPs : '–';
     ZONAS.forEach(function (z) { $('z' + z).textContent = (hoy.zonas && hoy.zonas[z] != null) ? hoy.zonas[z] : 0; });
+    $('tblOperarios').innerHTML = tablaOperarios(d.operariosHoy || []);
     $('tblUltimos').innerHTML = tablaUltimos(d.ultimos || []);
+  }
+
+  function tablaOperarios(arr) {
+    if (!arr.length) return '<div class="hint">Todavía nadie escaneó hoy.</div>';
+    var h = '<table><tr><th>Operario</th><th class="money">Envíos hoy</th><th class="money">Gasto</th></tr>';
+    var tc = 0, tm = 0;
+    arr.forEach(function (o) {
+      h += '<tr><td><b>' + esc(o.operario) + '</b></td><td class="money">' + o.cant + '</td><td class="money">' + money(o.total) + '</td></tr>';
+      tc += o.cant; tm += o.total;
+    });
+    h += '<tr class="total"><td>TOTAL</td><td class="money">' + tc + '</td><td class="money">' + money(tm) + '</td></tr>';
+    return h + '</table>';
   }
 
   function tablaUltimos(arr) {
