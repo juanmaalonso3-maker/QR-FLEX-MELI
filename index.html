@@ -398,12 +398,17 @@
           <div class="tbl-wrap" id="tblFinZona">Cargando…</div>
         </div>
         <div class="card">
-          <h2 class="sec-title">💰 Por quincena (corte viernes)</h2>
+          <h2 class="sec-title">💰 Por quincena (corte sábado)</h2>
           <div class="tbl-wrap" id="tblFinQuin">Cargando…</div>
         </div>
         <div class="card">
           <h2 class="sec-title">📅 Por semana (lunes a sábado)</h2>
           <div class="tbl-wrap" id="tblFinSem">Cargando…</div>
+        </div>
+        <div class="card">
+          <h2 class="sec-title">🧾 Detalle por día (para comparar con el proveedor)</h2>
+          <div class="page-sub">Elegí una quincena (o un rango de fechas) arriba y compará día por día contra la planilla del proveedor. Cuenta y total siguen los filtros de arriba.</div>
+          <div class="tbl-wrap" id="tblFinDia">Cargando…</div>
         </div>
       </div>
 
@@ -411,7 +416,7 @@
       <div id="sec-quincenas" class="sec hidden">
         <div class="refresh-row">
           <div><div class="page-title">Hoja de Quincenas</div>
-          <div class="page-sub">Cortes calculados automáticamente (siempre viernes, cada 14 días)</div></div>
+          <div class="page-sub">Cortes calculados automáticamente (siempre sábado, cada 14 días)</div></div>
           <button class="btn btn-gray btn-sm" onclick="loadQuincenas(true)">🔄 Actualizar</button>
         </div>
         <div class="card">
@@ -510,7 +515,7 @@
   var MS_DIA = 24 * 3600 * 1000;
   var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
   // Versión del backend que ESPERA este frontend. Debe coincidir con VERSION en Code.gs.
-  var BACKEND_VERSION_ESPERADA = '2026-07-14-v6';
+  var BACKEND_VERSION_ESPERADA = '2026-08-14-v7';
   var LS_SESSION = 'kenta_session'; // token de sesión propia (dura 90 días, sobrevive recargas)
   // Secciones que NO puede ver el rol 'coordinacion'.
   var SECCIONES_SOLO_ADMIN = ['financiero', 'quincenas', 'tarifas'];
@@ -1322,6 +1327,7 @@
     // Agregación
     var porZona = { CABA: { c: 0, m: 0 }, C1: { c: 0, m: 0 }, C2: { c: 0, m: 0 }, C3: { c: 0, m: 0 }, OTRA: { c: 0, m: 0 } };
     var porQ = {}, porS = {}, ordenQ = [], ordenS = [];
+    var porDia = {}; // fechaISO -> { c, m } (para comparar día por día con el proveedor)
     var totalGeneral = 0, cantGeneral = 0;
 
     rows.forEach(function (r) {
@@ -1334,6 +1340,9 @@
       if (!porQ[q]) { porQ[q] = nuevoAcumJS(); ordenQ.push(q); }
       if (!porS[s]) { porS[s] = nuevoAcumJS(); ordenS.push(s); }
       acumJS(porQ[q], z, costo); acumJS(porS[s], z, costo);
+
+      var dia = r.fechaISO || '';
+      if (dia) { if (!porDia[dia]) porDia[dia] = { c: 0, m: 0 }; porDia[dia].c++; porDia[dia].m += costo; }
     });
 
     // Resumen del filtro
@@ -1361,6 +1370,22 @@
 
     $('tblFinQuin').innerHTML = tablaPeriodos(serieJS(ordenQ, porQ), 'Quincena');
     $('tblFinSem').innerHTML = tablaPeriodos(serieJS(ordenS, porS), 'Semana');
+    $('tblFinDia').innerHTML = tablaDias(porDia, cantGeneral, totalGeneral);
+  }
+
+  // Detalle día por día (mismo formato que la planilla del proveedor: Fecha · Cuenta · Total).
+  // Orden ascendente por fecha para comparar de arriba hacia abajo igual que ellos.
+  function tablaDias(porDia, cantTot, totTot) {
+    var dias = Object.keys(porDia).sort(); // yyyy-MM-dd asc => cronológico
+    if (!dias.length) return '<div class="hint">Sin registros con esos filtros. Elegí una quincena o un rango de fechas para comparar.</div>';
+    var h = '<table><tr><th>Fecha</th><th class="money">Cuenta (envíos)</th><th class="money">Total $</th></tr>';
+    dias.forEach(function (iso) {
+      var a = porDia[iso];
+      var ddmmyyyy = iso.split('-').reverse().join('/'); // yyyy-MM-dd -> dd/MM/yyyy
+      h += '<tr><td>' + esc(ddmmyyyy) + '</td><td class="money">' + a.c + '</td><td class="money"><b>' + money(a.m) + '</b></td></tr>';
+    });
+    h += '<tr class="total"><td>TOTAL GENERAL</td><td class="money">' + cantTot + '</td><td class="money">' + money(totTot) + '</td></tr>';
+    return h + '</table>';
   }
 
   // Helpers de agregación en JS (espejo de los del backend)
