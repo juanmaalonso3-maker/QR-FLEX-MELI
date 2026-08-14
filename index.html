@@ -32,6 +32,15 @@
     .login-card p { color: var(--gris); font-size: 14px; margin-bottom: 24px; }
     #gsiBtn { display: flex; justify-content: center; }
 
+    /* Cargador de pantalla completa (al refrescar con sesión activa, en vez de mostrar el login) */
+    #appLoader { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column;
+                 align-items: center; justify-content: center; gap: 16px; color: #fff;
+                 background: linear-gradient(135deg, #0072CE 0%, #003a68 55%, #14181b 100%); }
+    #appLoader .spin { width: 46px; height: 46px; border: 4px solid rgba(255,255,255,.22);
+                       border-top-color: #fff; border-radius: 50%; animation: spin .9s linear infinite; }
+    #appLoader .ld-txt { font-size: 15px; font-weight: 600; opacity: .95; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* ============ LAYOUT ============ */
     #shell { display: flex; min-height: 100vh; }
     .sidebar { width: 232px; background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar2) 100%);
@@ -191,6 +200,12 @@
 </head>
 <body>
 
+  <!-- ============ CARGADOR (refresco con sesión activa) ============ -->
+  <div id="appLoader" class="hidden">
+    <div class="spin"></div>
+    <div class="ld-txt" id="appLoaderTxt">Reanudando sesión…</div>
+  </div>
+
   <!-- ============ LOGIN ============ -->
   <div id="stepLogin">
     <div class="login-card">
@@ -218,6 +233,7 @@
         <button id="nav-quincenas" onclick="switchSec('quincenas')"><span class="ico">📆</span><span class="txt">Quincenas</span></button>
         <button id="nav-cps" onclick="switchSec('cps')"><span class="ico">📮</span><span class="txt">Códigos Postales</span></button>
         <button id="nav-tarifas" onclick="switchSec('tarifas')"><span class="ico">💲</span><span class="txt">Tarifas</span></button>
+        <button id="nav-log" class="hidden" onclick="switchSec('log')"><span class="ico">📜</span><span class="txt">Registro / Log</span></button>
       </nav>
       <div class="foot" id="userLabel"></div>
     </aside>
@@ -476,6 +492,29 @@
         </div>
       </div>
 
+      <!-- ========== REGISTRO / LOG (solo juan.alonso) ========== -->
+      <div id="sec-log" class="sec hidden">
+        <div class="refresh-row">
+          <div><div class="page-title">Registro de actividad</div>
+          <div class="page-sub">Todo lo que pasó en el sistema: inicios de sesión, cargas y ediciones de envíos, CPs, tarifas, backfills y también los problemas (errores, tarifas faltantes). Solo lo ves vos.</div></div>
+          <div style="display:flex; gap:8px">
+            <button class="btn btn-gray btn-sm" onclick="loadLog(true)">🔄 Actualizar</button>
+            <button class="btn btn-green btn-sm" onclick="exportarLogCSV()">⬇️ Exportar CSV</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="filtros">
+            <input class="field" id="logBuscar" placeholder="Buscar (usuario, tipo, detalle)…" oninput="renderLog()" style="flex:1; min-width:200px">
+            <select class="field" id="logTipo" onchange="renderLog()"><option value="">Todos los tipos</option></select>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gris); white-space:nowrap">
+              <input type="checkbox" id="logSoloErrores" onchange="renderLog()"> Solo problemas
+            </label>
+          </div>
+          <div class="page-sub" id="logResumen"></div>
+          <div class="tbl-wrap" id="tblLog">Cargando…</div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -515,7 +554,7 @@
   var MS_DIA = 24 * 3600 * 1000;
   var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
   // Versión del backend que ESPERA este frontend. Debe coincidir con VERSION en Code.gs.
-  var BACKEND_VERSION_ESPERADA = '2026-08-14-v7';
+  var BACKEND_VERSION_ESPERADA = '2026-08-14-v8';
   var LS_SESSION = 'kenta_session'; // token de sesión propia (dura 90 días, sobrevive recargas)
   // Secciones que NO puede ver el rol 'coordinacion'.
   var SECCIONES_SOLO_ADMIN = ['financiero', 'quincenas', 'tarifas'];
@@ -524,6 +563,10 @@
   var idToken = '';
   var sessionToken = '';   // token de sesión propia (persistido en localStorage)
   var rolActual = '';      // 'admin' | 'coordinacion'
+  var emailActual = '';    // email en minúsculas del usuario logueado
+  var SUPERADMIN = 'juan.alonso@bitek.com.ar'; // único que ve el Registro / Log
+  var logCache = null;     // filas del log traídas del backend
+  var TIPOS_PROBLEMA = ['EXCEPCION', 'SIN_QUINCENA', 'TARIFA_FALTANTE', 'ERROR']; // se resaltan en rojo
   var envioId = '', matanza = '', cordonManual = '', cordonNuevo = '', saving = false;
   var secActual = 'dashboard';
   var editandoId = '', matanzaEdit = '', cordonEdit = '';
@@ -603,11 +646,12 @@
     var guardada = leerSesionLS();
     if (guardada) {
       sessionToken = guardada;
-      $('loginMsg').innerHTML = '<div class="msg msg-warn">Reanudando sesión…</div>';
+      // Mostramos un cargador de pantalla completa (NO el login) mientras validamos la sesión.
+      show('appLoader'); hide('stepLogin');
       api('estado', {}).then(function (r) {
         if (r.status === 'OK') { entrarApp(r); }
-        else { borrarSesionLS(); sessionToken = ''; initGsi(); }  // sesión vencida -> login normal
-      }).catch(function () { borrarSesionLS(); sessionToken = ''; initGsi(); });
+        else { borrarSesionLS(); sessionToken = ''; hide('appLoader'); show('stepLogin'); initGsi(); }  // sesión vencida -> login normal
+      }).catch(function () { borrarSesionLS(); sessionToken = ''; hide('appLoader'); show('stepLogin'); initGsi(); });
     } else {
       initGsi();
     }
@@ -644,6 +688,7 @@
     if (r.session) { sessionToken = r.session; guardarSesion(sessionToken); }  // sesión propia de 90 días
     idToken = '';                    // el token de Google ya no hace falta
     rolActual = r.rol || 'coordinacion';
+    emailActual = String(r.email || '').toLowerCase().trim();
     aplicarRol();
     $('userLabel').textContent = r.email;
     $('cntHoy').textContent = r.hoy;
@@ -654,7 +699,7 @@
                zona: u.zona, costo: u.costo, operario: u.operario, sync: 'ok', fromServer: true };
     });
     $('loginMsg').innerHTML = '';
-    hide('stepLogin'); show('shell');
+    hide('appLoader'); hide('stepLogin'); show('shell');
     chequearVersion(r.version);
     switchSec('dashboard');
     precargarMapaCPs();
@@ -667,6 +712,9 @@
       var btn = $('nav-' + s);
       if (btn) btn.classList.toggle('hidden', !esAdmin);
     });
+    // El Registro / Log es EXCLUSIVO de un email (ni otros admin lo ven).
+    var btnLog = $('nav-log');
+    if (btnLog) btnLog.classList.toggle('hidden', emailActual !== SUPERADMIN);
   }
 
   // Baja el mapa CP->zona una sola vez para resolver el escaneo sin ida y vuelta.
@@ -687,9 +735,11 @@
   function switchSec(sec) {
     // Guardia por rol: coordinación no puede abrir Financiero, Quincenas ni Tarifas.
     if (rolActual !== 'admin' && SECCIONES_SOLO_ADMIN.indexOf(sec) !== -1) sec = 'dashboard';
-    ['dashboard', 'escaneo', 'historial', 'financiero', 'quincenas', 'cps', 'tarifas'].forEach(function (s) {
+    // El Log es exclusivo del SUPERADMIN.
+    if (sec === 'log' && emailActual !== SUPERADMIN) sec = 'dashboard';
+    ['dashboard', 'escaneo', 'historial', 'financiero', 'quincenas', 'cps', 'tarifas', 'log'].forEach(function (s) {
       $('sec-' + s).classList.toggle('hidden', s !== sec);
-      $('nav-' + s).classList.toggle('on', s === sec);
+      var nb = $('nav-' + s); if (nb) nb.classList.toggle('on', s === sec);
     });
     secActual = sec;
     if (sec === 'dashboard') loadDashboard(false);
@@ -698,6 +748,78 @@
     if (sec === 'financiero') loadFinanciero(false);
     if (sec === 'quincenas') loadQuincenas(false);
     if (sec === 'tarifas') loadTarifas(false);
+    if (sec === 'log') loadLog(false);
+  }
+
+  // ================== REGISTRO / LOG (solo SUPERADMIN) ==================
+  function loadLog(force) {
+    if (emailActual !== SUPERADMIN) return;
+    if (logCache && !force) { poblarFiltrosLog(); renderLog(); return; }
+    $('tblLog').innerHTML = 'Cargando…';
+    api('logs', { limit: 2000 }).then(function (r) {
+      if (r.status !== 'OK') { $('tblLog').innerHTML = '<div class="msg msg-err">' + esc(r.msg || 'Error') + '</div>'; return; }
+      logCache = r.logs || [];
+      poblarFiltrosLog(); renderLog();
+    }).catch(function (e) { if (e.message !== 'SESION') $('tblLog').innerHTML = errorHTML(e); });
+  }
+
+  function poblarFiltrosLog() {
+    var tipos = {};
+    (logCache || []).forEach(function (l) { if (l.tipo) tipos[l.tipo] = 1; });
+    var cur = $('logTipo').value;
+    var h = '<option value="">Todos los tipos</option>';
+    Object.keys(tipos).sort().forEach(function (t) { h += '<option value="' + esc(t) + '">' + esc(t) + '</option>'; });
+    $('logTipo').innerHTML = h; $('logTipo').value = cur;
+  }
+
+  function logFiltrado() {
+    var q = ($('logBuscar').value || '').toLowerCase().trim();
+    var tipo = $('logTipo').value;
+    var soloErr = $('logSoloErrores').checked;
+    return (logCache || []).filter(function (l) {
+      if (tipo && l.tipo !== tipo) return false;
+      if (soloErr && TIPOS_PROBLEMA.indexOf(String(l.tipo).toUpperCase()) === -1) return false;
+      if (q) {
+        var blob = ((l.usuario || '') + ' ' + (l.tipo || '') + ' ' + (l.detalle || '') + ' ' + (l.fecha || '')).toLowerCase();
+        if (blob.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderLog() {
+    if (!logCache) return;
+    var rows = logFiltrado();
+    $('logResumen').innerHTML = '<b>' + rows.length + '</b> de ' + logCache.length + ' eventos';
+    if (!rows.length) { $('tblLog').innerHTML = '<div class="hint">Sin eventos con esos filtros.</div>'; return; }
+    var h = '<table><tr><th>Fecha/Hora</th><th>Usuario</th><th>Tipo</th><th>Detalle</th></tr>';
+    rows.forEach(function (l) {
+      var esProb = TIPOS_PROBLEMA.indexOf(String(l.tipo).toUpperCase()) !== -1;
+      h += '<tr><td style="white-space:nowrap">' + esc(l.fecha) + '</td>' +
+           '<td>' + esc(String(l.usuario || '').split('@')[0]) + '</td>' +
+           '<td>' + (esProb ? '<b style="color:#c0392b">' + esc(l.tipo) + '</b>' : esc(l.tipo)) + '</td>' +
+           '<td>' + esc(l.detalle) + '</td></tr>';
+    });
+    $('tblLog').innerHTML = h + '</table>';
+  }
+
+  function exportarLogCSV() {
+    if (emailActual !== SUPERADMIN) return;
+    var rows = logFiltrado();
+    if (!rows.length) { $('logResumen').innerHTML = '<b style="color:#c0392b">No hay eventos para exportar con los filtros actuales.</b>'; return; }
+    var enc = function (v) { v = String(v == null ? '' : v); return '"' + v.replace(/"/g, '""') + '"'; };
+    var lineas = ['Fecha/Hora,Usuario,Tipo,Detalle'];
+    rows.forEach(function (l) { lineas.push([enc(l.fecha), enc(l.usuario), enc(l.tipo), enc(l.detalle)].join(',')); });
+    var csv = String.fromCharCode(0xFEFF) + lineas.join('\r\n'); // BOM => acentos correctos al abrir en Excel
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var d = new Date();
+    var pad = function (n) { return ('0' + n).slice(-2); };
+    var nombre = 'log_envios_flex_' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + '.csv';
+    var a = document.createElement('a');
+    a.href = url; a.download = nombre;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 120);
   }
 
   // ================== ESCANEO (UI OPTIMISTA / ASÍNCRONO) ==================
