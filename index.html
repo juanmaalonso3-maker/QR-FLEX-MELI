@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kenta · Control de Envíos</title>
+  <title>Kenta · Control de Envíos y Depósito</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -196,7 +196,250 @@
              box-shadow: 0 20px 60px rgba(0,0,0,.35); max-height: 92vh; overflow-y: auto; }
     .modal h2 { font-size: 16px; font-weight: 800; margin-bottom: 4px; font-family: 'Poppins','Inter',sans-serif; }
     .modal .msub { font-size: 12px; color: var(--gris); margin-bottom: 14px; }
-  </style>
+  
+/* ==================== OnCity · picking de pedidos VTEX ==================== */
+#sec-oncity{
+  --bg:#eef1f6; --card:#ffffff; --line:#dde3ec; --line2:#eef2f7;
+  --ink:#0d1520; --ink2:#3f4c5f; --muted:#7c8899;
+  --brand:#1e4fd8; --brand-ink:#123399;
+  --ok:#0f8a4b; --ok-bg:#e6f6ed;
+  --warn:#a3670a; --warn-bg:#fdf3e0;
+  --err:#c22a2a; --err-bg:#fdeaea;
+  --shadow:0 1px 2px rgba(13,21,32,.06),0 4px 14px rgba(13,21,32,.06);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+#sec-oncity *{box-sizing:border-box}
+#sec-oncity [hidden]{display:none!important}
+#sec-oncity{margin:0;padding:0}
+#sec-oncity{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); font-size:15px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+#sec-oncity button{font:inherit;cursor:pointer}
+#sec-oncity input,#sec-oncity select{font:inherit}
+#sec-oncity a{color:var(--brand)}
+#sec-oncity /* ---------- topbar ---------- */
+.top{
+  position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;
+}
+#sec-oncity .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+#sec-oncity .brand .mark{
+  width:30px;height:30px;border-radius:8px;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:15px;font-weight:800;
+}
+#sec-oncity .brand small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);letter-spacing:0}
+#sec-oncity .top .sp{flex:1}
+#sec-oncity .pill{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--line);background:#fbfcfe;font-size:12.5px;font-weight:600;color:var(--ink2);
+  white-space:nowrap;
+}
+#sec-oncity .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+#sec-oncity .dot.ok{background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
+#sec-oncity .dot.err{background:var(--err);box-shadow:0 0 0 3px var(--err-bg)}
+#sec-oncity .dot.warn{background:var(--warn);box-shadow:0 0 0 3px var(--warn-bg)}
+#sec-oncity .dot.live{animation:ocPulse 1.6s infinite}
+@keyframes ocPulse{0%,100%{opacity:1}50%{opacity:.35}}
+#sec-oncity /* ---------- tabs ---------- */
+.oc-tabs{display:flex;gap:4px;padding:0 18px;background:#fff;border-bottom:1px solid var(--line);
+  position:sticky;top:51px;z-index:39;overflow-x:auto}
+#sec-oncity .oc-tab{
+  border:0;background:none;padding:11px 14px;font-size:14px;font-weight:600;color:var(--muted);
+  border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;
+}
+#sec-oncity .oc-tab:hover{color:var(--ink2)}
+#sec-oncity .oc-tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+#sec-oncity .oc-tab .badge{
+  display:inline-block;margin-left:6px;background:var(--line);color:var(--ink2);
+  border-radius:999px;padding:1px 7px;font-size:11.5px;font-weight:700;
+}
+#sec-oncity .oc-tab.active .badge{background:var(--brand);color:#fff}
+#sec-oncity main{padding:18px;max-width:1400px;margin:0 auto}
+#sec-oncity .oc-view{display:none}
+#sec-oncity .oc-view.active{display:block}
+#sec-oncity /* ---------- cards ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px}
+#sec-oncity .card>h2{
+  margin:0;padding:13px 16px;font-size:14px;letter-spacing:.02em;text-transform:uppercase;
+  color:var(--ink2);border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+#sec-oncity .card>h2 .sp{flex:1}
+#sec-oncity .card .body{padding:16px}
+#sec-oncity .card .body.tight{padding:0}
+#sec-oncity .hint{color:var(--muted);font-size:13px;margin:0}
+#sec-oncity /* ---------- buttons ---------- */
+.btn{
+  border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;
+  padding:9px 14px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:7px;
+}
+#sec-oncity .btn:hover{background:#f7f9fc}
+#sec-oncity .btn:active{transform:translateY(1px)}
+#sec-oncity .btn[disabled]{opacity:.5;cursor:not-allowed}
+#sec-oncity .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+#sec-oncity .btn.primary:hover{background:var(--brand-ink)}
+#sec-oncity .btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+#sec-oncity .btn.danger{background:#fff;border-color:#f0c4c4;color:var(--err)}
+#sec-oncity .btn.danger:hover{background:var(--err-bg)}
+#sec-oncity .btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+#sec-oncity .btn.big{padding:14px 22px;font-size:16px;border-radius:11px}
+#sec-oncity .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#sec-oncity /* ---------- scan input ---------- */
+.scanbox{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+#sec-oncity .scanbox .wrap{flex:1;min-width:260px;position:relative}
+#sec-oncity .scanbox input{
+  width:100%;padding:16px 16px 16px 46px;border:2px solid var(--line);border-radius:11px;
+  font-family:var(--mono);font-size:19px;letter-spacing:.04em;background:#fbfcfe;color:var(--ink);
+}
+#sec-oncity .scanbox input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(30,79,216,.1)}
+#sec-oncity .scanbox .ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;pointer-events:none}
+#sec-oncity .scanbox.armed input{border-color:var(--ok);background:#fff}
+#sec-oncity /* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse}
+#sec-oncity th{
+  text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line);background:#fafbfd;font-weight:700;position:sticky;top:0;
+}
+#sec-oncity td{padding:11px 14px;border-bottom:1px solid var(--line2);vertical-align:middle}
+#sec-oncity tbody tr:last-child td{border-bottom:0}
+#sec-oncity tbody tr:hover{background:#fafbfd}
+#sec-oncity .mono{font-family:var(--mono);font-size:13px}
+#sec-oncity .num{text-align:right;font-variant-numeric:tabular-nums}
+#sec-oncity .qty{
+  display:inline-grid;place-items:center;min-width:34px;height:30px;padding:0 8px;border-radius:8px;
+  background:var(--brand);color:#fff;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;
+}
+#sec-oncity .qty.n1{background:#eef2fb;color:var(--brand-ink)}
+#sec-oncity .thumb{width:44px;height:44px;border-radius:7px;object-fit:contain;background:#f4f6fa;border:1px solid var(--line2);flex:none}
+#sec-oncity .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:700;letter-spacing:.02em}
+#sec-oncity .tag.ok{background:var(--ok-bg);color:var(--ok)}
+#sec-oncity .tag.warn{background:var(--warn-bg);color:var(--warn)}
+#sec-oncity .tag.err{background:var(--err-bg);color:var(--err)}
+#sec-oncity .tag.mute{background:#eef1f6;color:var(--ink2)}
+#sec-oncity .stack{display:flex;flex-direction:column;gap:2px}
+#sec-oncity .sub{font-size:12.5px;color:var(--muted)}
+#sec-oncity .empty{padding:34px 16px;text-align:center;color:var(--muted)}
+#sec-oncity .empty .big{font-size:28px;margin-bottom:6px;opacity:.5}
+#sec-oncity /* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+#sec-oncity .stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 15px;box-shadow:var(--shadow)}
+#sec-oncity .stat .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+#sec-oncity .stat .v{font-size:27px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.25}
+#sec-oncity .stat .v.ok{color:var(--ok)}
+#sec-oncity .stat .v.warn{color:var(--warn)}
+#sec-oncity .stat .v.err{color:var(--err)}
+#sec-oncity /* ---------- individual scan result ---------- */
+.result{border-radius:12px;border:1px solid var(--line);overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+#sec-oncity .result .head{padding:14px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line2)}
+#sec-oncity .result.found .head{background:var(--ok-bg);border-bottom-color:#c8e8d6}
+#sec-oncity .result.error .head{background:var(--err-bg);border-bottom-color:#f2cfcf}
+#sec-oncity .result.warn .head{background:var(--warn-bg);border-bottom-color:#f0dcb8}
+#sec-oncity .result .head .icon{font-size:26px;line-height:1}
+#sec-oncity .result .head .ttl{font-size:18px;font-weight:800;letter-spacing:-.01em}
+#sec-oncity .result .head .sp{flex:1}
+#sec-oncity .pick{display:flex;gap:14px;padding:16px;border-bottom:1px solid var(--line2);align-items:flex-start}
+#sec-oncity .pick:last-child{border-bottom:0}
+#sec-oncity .pick.done{background:#f7fbf8}
+#sec-oncity .pick img{width:86px;height:86px;border-radius:9px;object-fit:contain;background:#f4f6fa;border:1px solid var(--line2);flex:none}
+#sec-oncity .pick .info{flex:1;min-width:200px}
+#sec-oncity .pick .name{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:5px}
+#sec-oncity .pick .meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+#sec-oncity .pick .meta b{color:var(--ink2);font-family:var(--mono);font-weight:600}
+#sec-oncity .pick .bigqty{
+  min-width:74px;height:74px;border-radius:11px;background:var(--brand);color:#fff;
+  display:grid;place-items:center;text-align:center;flex:none;
+}
+#sec-oncity .pick .bigqty .n{font-size:31px;font-weight:800;line-height:1}
+#sec-oncity .pick .bigqty .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;opacity:.85}
+#sec-oncity .pick.done .bigqty{background:var(--ok)}
+#sec-oncity .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;padding:14px 16px;background:#fafbfd;border-bottom:1px solid var(--line2)}
+#sec-oncity .kv dt{color:var(--muted);font-weight:600}
+#sec-oncity .kv dd{margin:0;color:var(--ink2)}
+#sec-oncity /* ---------- log ---------- */
+.logline{display:grid;grid-template-columns:78px 92px 1fr;gap:12px;padding:8px 14px;border-bottom:1px solid var(--line2);font-size:13px}
+#sec-oncity .logline:last-child{border-bottom:0}
+#sec-oncity .logline .t{color:var(--muted);font-family:var(--mono);font-size:12px}
+#sec-oncity .logline .msg{color:var(--ink2)}
+#sec-oncity .logline .msg b{font-family:var(--mono);color:var(--ink)}
+#sec-oncity /* ---------- config ---------- */
+.field{margin-bottom:15px}
+#sec-oncity .field label{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:5px}
+#sec-oncity .field input[type=text],#sec-oncity .field input[type=url],#sec-oncity .field select{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;
+}
+#sec-oncity .field input:focus,#sec-oncity .field select:focus{outline:none;border-color:var(--brand);background:#fff}
+#sec-oncity .field .fh{font-size:12.5px;color:var(--muted);margin-top:5px}
+#sec-oncity .switch{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line2)}
+#sec-oncity .switch:last-of-type{border-bottom:0}
+#sec-oncity .switch .txt{flex:1}
+#sec-oncity .switch .txt b{display:block;font-size:14px}
+#sec-oncity .switch .txt span{font-size:12.5px;color:var(--muted)}
+#sec-oncity .tgl{width:46px;height:27px;border-radius:999px;background:#cfd7e3;border:0;position:relative;flex:none;transition:background .15s}
+#sec-oncity .tgl::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+#sec-oncity .tgl.on{background:var(--ok)}
+#sec-oncity .tgl.on::after{left:22px}
+#sec-oncity .toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:100;
+  background:var(--ink);color:#fff;padding:12px 20px;border-radius:11px;font-weight:600;font-size:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;
+  max-width:90vw;text-align:center;
+}
+#sec-oncity .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+#sec-oncity .toast.ok{background:var(--ok)}
+#sec-oncity .toast.err{background:var(--err)}
+#sec-oncity .toast.warn{background:var(--warn)}
+#sec-oncity .printonly{display:none}
+#sec-oncity .alert{
+  border-radius:11px;padding:13px 16px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start;
+  border:1px solid;font-size:14px;
+}
+#sec-oncity .alert .ic{font-size:22px;line-height:1.1}
+#sec-oncity .alert b{display:block;font-size:15px;margin-bottom:2px}
+#sec-oncity .alert.err{background:var(--err-bg);border-color:#f2cfcf;color:#7d1a1a}
+#sec-oncity .alert.warn{background:var(--warn-bg);border-color:#f0dcb8;color:#6b4406}
+#sec-oncity .alert .sub{color:inherit;opacity:.8}
+#sec-oncity .banner{
+  background:var(--warn-bg);border:1px solid #f0dcb8;color:#6b4406;border-radius:11px;
+  padding:11px 15px;font-size:13.5px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;
+}
+#sec-oncity .banner b{color:#4a2f04}
+@media(max-width:640px){#sec-oncity main{padding:12px}
+#sec-oncity .top{padding:9px 12px;gap:9px}
+#sec-oncity .oc-tabs{padding:0 8px;top:56px}
+#sec-oncity .pick img{width:64px;height:64px}}
+
+/* Impresión: solo la lista de picking de OnCity, sin el marco de la app. */
+@media print{
+  body.print-oncity *{visibility:hidden!important}
+  body.print-oncity #sec-oncity,
+  body.print-oncity #sec-oncity *{visibility:visible!important}
+  body.print-oncity #sec-oncity{position:absolute;left:0;top:0;width:100%;padding:0;margin:0}
+  body.print-oncity #sec-oncity .noprint,
+  body.print-oncity #sec-oncity .oc-tabs,
+  body.print-oncity #sec-oncity .toast,
+  body.print-oncity #sec-oncity .alert,
+  body.print-oncity #sec-oncity .oc-view:not(.active){display:none!important}
+  body.print-oncity #sec-oncity .printonly{display:block!important;margin-bottom:14px}
+  body.print-oncity #sec-oncity .printonly h1{font-size:18px;margin:0 0 4px}
+  body.print-oncity #sec-oncity .card{box-shadow:none;border:0}
+  body.print-oncity #sec-oncity .thumb{display:none}
+  body.print-oncity #sec-oncity tr{break-inside:avoid}
+  body.print-oncity #sec-oncity thead{display:table-header-group}
+}
+
+
+.oc-estado{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+/* La app Flex define .btn/.card/.stat a lo ancho; acá recuperamos el diseño propio. */
+#sec-oncity .btn{width:auto;max-width:none;margin:0;text-transform:none;letter-spacing:0;box-shadow:none}
+#sec-oncity .card{padding:0;margin:0 0 16px}
+#sec-oncity .stat{margin:0}
+#sec-oncity .pill{width:auto;margin:0}
+#sec-oncity .row{align-items:center}
+#sec-oncity table{margin:0}
+#sec-oncity h2{text-align:left}
+
+</style>
 </head>
 <body>
 
@@ -227,7 +470,8 @@
       </div>
       <nav>
         <button id="nav-dashboard" class="on" onclick="switchSec('dashboard')"><span class="ico">📊</span><span class="txt">Dashboard Hoy</span></button>
-        <button id="nav-escaneo" onclick="switchSec('escaneo')"><span class="ico">📷</span><span class="txt">Escaneo</span></button>
+        <button id="nav-escaneo" onclick="switchSec('escaneo')"><span class="ico">📷</span><span class="txt">Escaneo MercadoLibre</span></button>
+        <button id="nav-oncity" onclick="switchSec('oncity')"><span class="ico">📦</span><span class="txt">Escaneo OnCity</span></button>
         <button id="nav-historial" onclick="switchSec('historial')"><span class="ico">🗂️</span><span class="txt">Historial</span></button>
         <button id="nav-financiero" onclick="switchSec('financiero')"><span class="ico">💵</span><span class="txt">Financiero</span></button>
         <button id="nav-quincenas" onclick="switchSec('quincenas')"><span class="ico">📆</span><span class="txt">Quincenas</span></button>
@@ -355,6 +599,218 @@
       </div>
 
       <!-- ========== HISTORIAL ========== -->
+<div id="sec-oncity" class="sec hidden">
+<div class="oc-estado noprint">
+  <span class="pill" id="pillConn"><i class="dot" id="dotConn"></i><span id="txtConn">Sin verificar</span></span>
+  <span class="pill" id="pillVtex"><i class="dot" id="dotVtex"></i><span id="txtVtex">VTEX</span></span>
+  <span class="pill" id="pillSync"><i class="dot" id="dotSync"></i><span id="txtSync">PC</span></span>
+  <span class="pill" id="pillUser"><i class="dot warn"></i><span id="txtUser">—</span></span>
+</div>
+
+
+
+<nav class="oc-tabs noprint">
+  <button class="oc-tab active" data-view="masivo">Escaneo masivo · Picking<span class="badge" id="bMasivo">0</span></button>
+  <button class="oc-tab" data-view="individual">Escaneo individual · Armado</button>
+  <button class="oc-tab" data-view="hist">Historial<span class="badge" id="bHist">0</span></button>
+  <button class="oc-tab" data-view="log">Log<span class="badge" id="bLog">0</span></button>
+  <button class="oc-tab" data-view="config">Configuración</button>
+</nav>
+
+<main>
+
+<!-- ============ MASIVO ============ -->
+<section class="oc-view active" id="view-masivo">
+  <div class="printonly" id="printHead"></div>
+
+  <div class="stats noprint">
+    <div class="stat"><div class="k">Pedidos en la ola</div><div class="v" id="stOrders">0</div></div>
+    <div class="stat"><div class="k">SKUs distintos</div><div class="v" id="stSkus">0</div></div>
+    <div class="stat"><div class="k">Unidades a bajar</div><div class="v" id="stUnits">0</div></div>
+    <div class="stat"><div class="k">Ya armados</div><div class="v ok" id="stDone">0</div></div>
+  </div>
+
+  <div class="card noprint">
+    <h2>1 · Cargar pedidos a la ola<span class="sp"></span>
+      <span class="hint" id="waveInfo"></span>
+    </h2>
+    <div class="body">
+      <div class="scanbox" style="margin-bottom:12px">
+        <div class="wrap">
+          <span class="ico">▥</span>
+          <input id="inMasivo" autocomplete="off" spellcheck="false" placeholder="Escaneá las etiquetas una tras otra…">
+        </div>
+        <button class="btn primary" id="btnAddMasivo">Agregar</button>
+      </div>
+      <span class="pill" id="pendChip" hidden style="margin-bottom:10px"></span>
+      <div id="masivoAlert"></div>
+      <p class="hint" style="margin-bottom:12px">El lector envía el código y un Enter automático: no hace falta tocar nada entre etiqueta y etiqueta. También podés tipear el código a mano.</p>
+      <div class="row">
+        <button class="btn" id="btnPull">⭳ Traer todos los "Listo para preparación"</button>
+        <button class="btn" id="btnRefresh">↻ Actualizar detalles</button>
+        <div class="sp" style="flex:1"></div>
+        <button class="btn danger sm" id="btnClearWave">Vaciar ola</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Lista de picking · qué bajar del depósito<span class="sp"></span>
+      <button class="btn sm noprint" id="btnPrint">🖨 Imprimir</button>
+      <button class="btn sm noprint" id="btnCsv">⇩ CSV</button>
+    </h2>
+    <div class="body tight">
+      <div id="pickWrap"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Detalle por pedido · qué va en cada caja</h2>
+    <div class="body tight">
+      <div id="ordersWrap"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INDIVIDUAL ============ -->
+<section class="oc-view" id="view-individual">
+  <div class="card noprint">
+    <h2>Escaneo individual · armado por pedido<span class="sp"></span>
+      <span class="pill" id="pillMode"><i class="dot"></i><span>Solo mostrar</span></span>
+    </h2>
+    <div class="body">
+      <div class="scanbox armed" id="scanIndBox">
+        <div class="wrap">
+          <span class="ico">▥</span>
+          <input id="inInd" autocomplete="off" spellcheck="false" placeholder="Escaneá la etiqueta del pedido…">
+        </div>
+        <button class="btn primary" id="btnFindInd">Buscar</button>
+        <button class="btn" id="btnClearInd">Limpiar</button>
+      </div>
+      <p class="hint" style="margin-top:10px">El código de barras de la etiqueta de Envíame es el número de pedido de VTEX sin el prefijo <b class="mono">RMS-</b>. La app acepta las dos formas, y también corrige sola cuando la pistola manda <b class="mono">'</b> o <b class="mono">´</b> en lugar del guion.</p>
+    </div>
+  </div>
+
+  <div id="indResult"></div>
+
+  <div class="card noprint">
+    <h2>Últimos pedidos armados</h2>
+    <div class="body tight"><div id="doneWrap"></div></div>
+  </div>
+</section>
+
+<!-- ============ HISTORIAL ============ -->
+<section class="oc-view" id="view-hist">
+  <div class="card">
+    <h2>Historial de pedidos<span class="sp"></span>
+      <span class="hint" id="histCount"></span>
+      <button class="btn sm noprint" id="btnHistCsv">⇩ CSV</button>
+      <button class="btn sm danger noprint" id="btnHistClear">Borrar todo</button>
+    </h2>
+    <div class="body">
+      <div class="scanbox">
+        <div class="wrap">
+          <span class="ico">⌕</span>
+          <input id="histSearch" autocomplete="off" spellcheck="false"
+                 placeholder="Buscar por pedido, secuencia, cliente, SKU, EAN o producto…" style="font-size:16px;letter-spacing:0">
+        </div>
+        <button class="btn" id="btnHistClearSearch">Limpiar</button>
+      </div>
+      <p class="hint" style="margin-top:10px">Guarda todos los pedidos escaneados, de todos los días. No se borra con el corte diario.</p>
+    </div>
+    <div class="body tight"><div id="histWrap"></div></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="oc-view" id="view-log">
+  <div class="card">
+    <h2>Log de actividad<span class="sp"></span>
+      <select id="logFilter" style="padding:6px 10px;border:1px solid var(--line);border-radius:8px">
+        <option value="">Todos los eventos</option>
+        <option value="scan">Escaneos</option>
+        <option value="error">Errores</option>
+        <option value="vtex">Llamadas a VTEX</option>
+        <option value="armado">Armados</option>
+      </select>
+      <button class="btn sm noprint" id="btnLogCsv">⇩ CSV</button>
+      <button class="btn sm danger noprint" id="btnLogClear">Borrar</button>
+    </h2>
+    <div class="body tight"><div id="logWrap"></div></div>
+  </div>
+</section>
+
+<!-- ============ CONFIG ============ -->
+<section class="oc-view" id="view-config">
+  <div class="card">
+    <h2>Conexión</h2>
+    <div class="body">
+      <p class="hint" style="margin-bottom:12px">La conexión con VTEX y con la planilla las maneja el backend de Kenta, con tu mismo usuario de Google. Acá no hay nada que configurar.</p>
+      <div class="field">
+        <label for="cfgMaquina">Nombre de esta máquina</label>
+        <input type="text" id="cfgMaquina" placeholder="Depósito 1">
+        <div class="fh">Aparece en el historial y en los avisos: “este pedido ya lo tomó Depósito 2”.</div>
+      </div>
+      <div class="field">
+        <label for="cfgPrefix">Prefijo del ID de pedido en VTEX</label>
+        <input type="text" id="cfgPrefix" placeholder="RMS-">
+        <div class="fh">Se antepone al código escaneado. En tu cuenta es <b class="mono">RMS-</b>.</div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btnSaveCfg">Guardar</button>
+        <button class="btn" id="btnTest">Probar conexión</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Operación</h2>
+    <div class="body">
+      <div class="switch">
+        <div class="txt"><b>Modo demo</b><span>Trabaja con pedidos de prueba, sin llamar a VTEX. Útil para entrenar operarios.</span></div>
+        <button class="tgl" id="tglDemo" data-cfg="demo"></button>
+      </div>
+      <div class="switch">
+        <div class="txt"><b>Estado compartido entre PCs</b><span>Cada escaneo se registra en el Google Sheet y todas las máquinas ven lo mismo. Si lo apagás, esta PC trabaja sola y no detecta lo que escanearon las otras.</span></div>
+        <button class="tgl" id="tglSync" data-cfg="sync"></button>
+      </div>
+      <div class="switch">
+        <div class="txt"><b>Validar producto escaneado</b><span>Después de escanear el pedido, el operario debe escanear el código del producto. La app confirma o rechaza. Requiere EAN cargado en VTEX.</span></div>
+        <button class="tgl" id="tglValidate" data-cfg="validate"></button>
+      </div>
+      <div class="switch">
+        <div class="txt"><b>Aviso sonoro</b><span>Un tono corto al confirmar y uno grave al rechazar.</span></div>
+        <button class="tgl" id="tglSound" data-cfg="sound"></button>
+      </div>
+      
+  </div>
+
+  <div class="card">
+    <h2>Datos locales</h2>
+    <div class="body">
+      <p class="hint" style="margin-bottom:12px">
+        El <b>Google Sheet es la fuente de verdad</b>: ahí queda todo lo que escanea cada PC y de ahí
+        sale el control de duplicados. El navegador guarda una copia solo para responder rápido.
+        Reiniciar esta PC no borra nada de las demás; para empezar de cero en todo el depósito usá
+        el botón del medio.
+      </p>
+      <div class="row">
+        <button class="btn" id="btnResetJornada">↺ Reiniciar solo esta PC</button>
+        <button class="btn danger" id="btnResetDia">↺ Reiniciar el día en TODAS las PCs</button>
+        <button class="btn danger" id="btnResetTodo">Borrar el historial completo (todas las PCs)</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm danger" id="btnWipe">Borrar también la configuración de esta PC</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+
+
+</div>
       <div id="sec-historial" class="sec hidden">
         <div class="refresh-row">
           <div><div class="page-title">Historial completo</div>
@@ -554,10 +1010,12 @@
   var MS_DIA = 24 * 3600 * 1000;
   var ZONAS = ['CABA', 'C1', 'C2', 'C3'];
   // Versión del backend que ESPERA este frontend. Debe coincidir con VERSION en Code.gs.
-  var BACKEND_VERSION_ESPERADA = '2026-08-14-v8';
+  var BACKEND_VERSION_ESPERADA = '2026-08-18-v9';
   var LS_SESSION = 'kenta_session'; // token de sesión propia (dura 90 días, sobrevive recargas)
   // Secciones que NO puede ver el rol 'coordinacion'.
   var SECCIONES_SOLO_ADMIN = ['financiero', 'quincenas', 'tarifas'];
+  // El rol 'deposito' solo ve las dos solapas de escaneo.
+  var SECCIONES_DEPOSITO = ['escaneo', 'oncity'];
   // ====================================================
 
   var idToken = '';
@@ -568,6 +1026,7 @@
   var logCache = null;     // filas del log traídas del backend
   var TIPOS_PROBLEMA = ['EXCEPCION', 'SIN_QUINCENA', 'TARIFA_FALTANTE', 'ERROR']; // se resaltan en rojo
   var envioId = '', matanza = '', cordonManual = '', cordonNuevo = '', saving = false;
+  var timerAutoCP = null;   // auto-confirmar del CP: se cancela si el operario presiona Enter
   var secActual = 'dashboard';
   var editandoId = '', matanzaEdit = '', cordonEdit = '';
 
@@ -701,7 +1160,7 @@
     $('loginMsg').innerHTML = '';
     hide('appLoader'); hide('stepLogin'); show('shell');
     chequearVersion(r.version);
-    switchSec('dashboard');
+    switchSec(rolActual === 'deposito' ? 'escaneo' : 'dashboard');
     precargarMapaCPs();
   }
 
@@ -715,6 +1174,12 @@
     // El Registro / Log es EXCLUSIVO de un email (ni otros admin lo ven).
     var btnLog = $('nav-log');
     if (btnLog) btnLog.classList.toggle('hidden', emailActual !== SUPERADMIN);
+    // Depósito: solo las dos solapas de escaneo, nada de dashboards ni configuración.
+    var esDeposito = (rolActual === 'deposito');
+    ['dashboard', 'historial', 'cps'].forEach(function (s) {
+      var b2 = $('nav-' + s);
+      if (b2) b2.classList.toggle('hidden', esDeposito);
+    });
   }
 
   // Baja el mapa CP->zona una sola vez para resolver el escaneo sin ida y vuelta.
@@ -734,10 +1199,11 @@
   // ---------- navegación ----------
   function switchSec(sec) {
     // Guardia por rol: coordinación no puede abrir Financiero, Quincenas ni Tarifas.
-    if (rolActual !== 'admin' && SECCIONES_SOLO_ADMIN.indexOf(sec) !== -1) sec = 'dashboard';
+    if (rolActual !== 'admin' && SECCIONES_SOLO_ADMIN.indexOf(sec) !== -1) sec = (rolActual === 'deposito' ? 'escaneo' : 'dashboard');
+    if (rolActual === 'deposito' && SECCIONES_DEPOSITO.indexOf(sec) === -1) sec = 'escaneo';
     // El Log es exclusivo del SUPERADMIN.
     if (sec === 'log' && emailActual !== SUPERADMIN) sec = 'dashboard';
-    ['dashboard', 'escaneo', 'historial', 'financiero', 'quincenas', 'cps', 'tarifas', 'log'].forEach(function (s) {
+    ['dashboard', 'escaneo', 'oncity', 'historial', 'financiero', 'quincenas', 'cps', 'tarifas', 'log'].forEach(function (s) {
       $('sec-' + s).classList.toggle('hidden', s !== sec);
       var nb = $('nav-' + s); if (nb) nb.classList.toggle('on', s === sec);
     });
@@ -749,6 +1215,7 @@
     if (sec === 'quincenas') loadQuincenas(false);
     if (sec === 'tarifas') loadTarifas(false);
     if (sec === 'log') loadLog(false);
+    if (sec === 'oncity' && window.ONCITY_BOOT) window.ONCITY_BOOT(emailActual || $('userLabel').textContent);
   }
 
   // ================== REGISTRO / LOG (solo SUPERADMIN) ==================
@@ -917,6 +1384,7 @@
 
   function confirmar() {
     if (saving) return;
+    if (!envioId) return;        // ya se registró y se limpió: es un disparo repetido
     var res = resolverZonaLocal();
     if (res.error) { setMsg(res.error, 'msg-err'); return; }
     if (res.desconocido) {
@@ -934,6 +1402,14 @@
     // local para que el próximo escaneo del mismo CP lo reconozca sin volver a preguntar.
     // (El backend además lo persiste en Config_CPs.)
     if (cordonManual && res.cpMostrar) { mapaCPs[res.cpMostrar] = res.zona; }
+
+    // Guarda contra doble disparo: la pistola manda dos Enter, o el operario
+    // toca el botón y además presiona Enter. Sin esto se generan dos altas del
+    // mismo envío y la segunda vuelve como DUPLICADO.
+    var yaVivo = escaneosLocal.filter(function (r) { return r.envio === envioId && r.sync !== 'error'; })[0];
+    if (yaVivo) { resetScan(); return; }
+
+    saving = true;               // nadie más entra hasta que terminemos de registrar
 
     // ---- UI OPTIMISTA: registramos localmente y seguimos ----
     var ahora = new Date();
@@ -958,6 +1434,7 @@
 
     // ---- Persistencia en segundo plano ----
     enviarEnBackground(rec);
+    saving = false;
   }
 
   function flashScanMsg(html, cls) {
@@ -976,10 +1453,19 @@
         // Confirmación explícita cuando el CP no existía y quedó guardado en la base.
         if (r.cpAgregado && r.cp) { mapaCPs[r.cp] = r.zona; flashScanMsg('✅ CP ' + esc(r.cp) + ' agregado a la base como ' + esc(r.zona) + '.', 'msg-ok'); }
       } else if (r.status === 'DUPLICADO') {
-        rec.sync = 'error'; rec.msg = 'Ya estaba registrado el ' + r.fecha + ' por ' + r.operario;
-        // restamos el conteo optimista que habíamos sumado
-        $('cntHoy').textContent = Math.max(0, (parseInt($('cntHoy').textContent, 10) || 1) - 1);
-        beep(220, 350);
+        // Si el registro previo es MÍO y de HOY, no es un duplicado real: es mi
+        // propio envío que se mandó dos veces (doble Enter o reintento sobre algo
+        // que ya se había guardado). La fila existe y está bien.
+        var mismoUsuario = emailActual && String(r.operario || '').toLowerCase().indexOf(emailActual) !== -1;
+        var deHoy = String(r.fecha || '').indexOf(ddMMyyyy(new Date())) === 0;
+        if (mismoUsuario && deHoy) {
+          rec.sync = 'ok'; rec.msg = '';
+        } else {
+          rec.sync = 'error'; rec.msg = 'Ya estaba registrado el ' + r.fecha + ' por ' + r.operario;
+          // restamos el conteo optimista que habíamos sumado
+          $('cntHoy').textContent = Math.max(0, (parseInt($('cntHoy').textContent, 10) || 1) - 1);
+          beep(220, 350);
+        }
       } else if (r.status === 'CP_DESCONOCIDO') {
         rec.sync = 'error'; rec.msg = 'CP no reconocido por el server. Editá y elegí cordón.';
       } else {
@@ -1044,10 +1530,17 @@
     // pendientes/con error de esta sesión (sin duplicar envíos).
     api('escaneosHoy', {}).then(function (r) {
       if (r.status !== 'OK') return;
-      var localesVivos = escaneosLocal.filter(function (x) { return !x.fromServer && x.sync !== 'ok'; });
       var delServer = (r.escaneos || []).map(function (u) {
         return { localId: 'srv' + (localSeq++), fecha: u.fecha, envio: u.envio, cp: u.cp,
                  zona: u.zona, costo: u.costo, operario: u.operario, sync: 'ok', fromServer: true };
+      });
+      // Si el servidor YA tiene el envío, la copia local con error es basura:
+      // era un aviso de duplicado sobre nuestro propio registro. Se descarta,
+      // que es lo que hace que "Actualizar" por fin limpie la fila roja.
+      var porServidor = {};
+      delServer.forEach(function (x) { porServidor[x.envio] = 1; });
+      var localesVivos = escaneosLocal.filter(function (x) {
+        return !x.fromServer && x.sync !== 'ok' && !porServidor[x.envio];
       });
       // pendientes/errores locales primero, luego lo del server (sin duplicar envíos)
       var envios = {};
@@ -1055,6 +1548,13 @@
       localesVivos.concat(delServer).forEach(function (x) {
         if (envios[x.envio]) return; envios[x.envio] = 1; escaneosLocal.push(x);
       });
+      // El contador se recalcula contra lo que realmente hay en el servidor,
+      // así deja de arrastrar los +1 y -1 optimistas de la sesión.
+      var yo = String(emailActual || '').split('@')[0].toLowerCase();
+      if (yo) {
+        var mios = delServer.filter(function (x) { return String(x.operario || '').toLowerCase() === yo; }).length;
+        $('cntHoy').textContent = mios + localesVivos.length;
+      }
       renderUltimos(); actualizarPendientesInfo();
     }).catch(function () {});
   }
@@ -1653,10 +2153,12 @@
       if (!$('cordonBox').classList.contains('hidden')) ocultarCordonBox();
       setMsg('', '');
       var cp = $('inpCP').value.replace(/\D/g, '');
-      if (cp.length === 4 && !matanza) setTimeout(confirmar, 120);
+      clearTimeout(timerAutoCP);
+      if (cp.length === 4 && !matanza) timerAutoCP = setTimeout(confirmar, 120);
     });
     $('inpCP').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+      // El Enter cancela el auto-confirmar pendiente: si no, se registra dos veces.
+      if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timerAutoCP); confirmar(); }
     });
 
     $('inpCPEdit').addEventListener('input', function () {
@@ -1675,6 +2177,1407 @@
     });
     $('hBuscar').addEventListener('input', function () { renderHistorial(); });
   });
+</script>
+<div class="toast" id="toast"></div>
+<script>
+
+/* =====================================================================
+   Kenta · Preparación de pedidos OnCity/VTEX + Envíame
+   Frontend de una sola página. Sin dependencias externas.
+   Las credenciales de VTEX viven en el proxy (Apps Script), no acá.
+   ===================================================================== */
+(function(){
+"use strict";
+
+/* ------------------------------ config ------------------------------ */
+const LS = {
+  cfg:'kenta.picking.cfg.v2',
+  wave:'kenta.picking.wave.v2',
+  orders:'kenta.picking.orders.v2',
+  done:'kenta.picking.done.v2',
+  log:'kenta.picking.log.v2',
+  day:'kenta.picking.day.v2',
+  hist:'kenta.picking.hist.v2',
+  scan:'kenta.picking.scan.v2'
+};
+
+/* URL del proxy de Apps Script. Acá NO van credenciales de VTEX: viven en el
+   Apps Script. Este archivo es público en GitHub. */
+const PROXY_URL = 'backend-kenta';   // sello: el transporte real es api() del Flex
+
+const DEFAULT_CFG = {
+  proxy: PROXY_URL,
+  prefix: 'RMS-',
+  demo: false,       // conectado a VTEX real; se puede prender demo para entrenar
+  validate: false,   // doble escaneo de producto
+  sound: true,
+  auth: false,       // login de Google DESACTIVADO hasta terminar las pruebas
+  clientId: '',
+  maquina: '',       // nombre de esta PC, para saber quién escaneó qué
+  sync: true         // estado compartido vía Google Sheet
+};
+
+let CFG = load(LS.cfg, DEFAULT_CFG);
+CFG = Object.assign({}, DEFAULT_CFG, CFG);
+CFG.proxy = PROXY_URL;
+if(!CFG.maquina){                       // nombre por defecto, editable en Configuración
+  CFG.maquina = 'PC-' + Math.random().toString(36).slice(2,6).toUpperCase();
+  save(LS.cfg, CFG);
+}
+
+const state = {
+  wave: load(LS.wave, []),            // [orderId]
+  orders: load(LS.orders, {}),        // orderId -> order
+  done: load(LS.done, {}),            // orderId -> {ts, user, items}
+  log: load(LS.log, []),              // [{ts,type,msg}]
+  hist: load(LS.hist, []),            // historial permanente (no se borra por día)
+  escaneados: load(LS.scan, {}),      // pedidos escaneados de verdad (no los traídos de VTEX)
+  user: null,
+  conn: {backend:null, vtex:null},
+  ind: null,                          // estado del escaneo individual en curso
+  lastScan: 0,                        // para el corte de jornada a la medianoche
+  pendientes: 0,                      // escaneos resolviéndose contra VTEX
+  prefetchTs: 0,
+  syncTs: 0,                          // última sincronización con la planilla
+  syncOk: null,
+  escritosLocales: {}                 // ids escritos hace poco acá, para no pisarlos
+};
+
+function load(k, def){
+  try{ const v = JSON.parse(localStorage.getItem(k)); return (v===null||v===undefined)?def:v; }
+  catch(e){ return def; }
+}
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function persist(){
+  save(LS.cfg,CFG); save(LS.wave,state.wave); save(LS.orders,state.orders);
+  save(LS.done,state.done); save(LS.log,state.log.slice(0,500)); save(LS.hist,state.hist);
+  save(LS.scan,state.escaneados);
+}
+/* Guardados puntuales: escribir las 6 claves en cada escaneo es plata tirada. */
+const saveWave   = () => save(LS.wave, state.wave);
+const saveOrders = () => save(LS.orders, state.orders);
+const saveDone   = () => save(LS.done, state.done);
+const saveHist   = () => save(LS.hist, state.hist);
+const saveScan   = () => save(LS.scan, state.escaneados);
+
+/* Los escaneos vienen en ráfaga: agrupamos los redibujados en un solo frame. */
+let _raf = false;
+function scheduleRender(){
+  if(_raf) return;
+  _raf = true;
+  requestAnimationFrame(function(){ _raf = false; renderAll(); });
+}
+
+/* ------------------------------ helpers ------------------------------ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$ ' + Number(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const hhmm = d => new Date(d).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+const fecha = d => { try{ return new Date(d).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return '—'; } };
+
+/* Normaliza lo que escupe el lector: mayúsculas, sin espacios, sin prefijo.
+   La etiqueta de Envíame trae 1653451705535-01 y VTEX guarda RMS-1653451705535-01.
+
+   Ojo con las pistolas: según el layout de teclado con el que estén configuradas,
+   el guion sale como ' ´ ` / . , etc. Por eso cualquier separador raro se
+   convierte en "-" antes de buscar. Si además viene todo pegado sin separador,
+   se reconstruye asumiendo que los dos últimos dígitos son el número de bulto. */
+function normCode(raw){
+  let s = String(raw||'').trim().toUpperCase();
+  s = s.replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  s = s.replace(/^RMS-?/,'');
+  const m = s.match(/(\d{8,}-\d{1,3})/);          // patrón típico del ID de VTEX
+  if(m) return m[1];
+  const d = s.replace(/\D/g,'');
+  if(/^\d{14,}$/.test(d)) return d.slice(0,-2) + '-' + d.slice(-2);
+  return s;
+}
+
+/* Red de seguridad: comparar solo los dígitos hace que el match funcione
+   aunque el separador venga distinto, falte o sobre. */
+const digitsOnly = s => String(s||'').replace(/\D/g,'');
+function findCached(code){
+  const d = digitsOnly(code);
+  if(d.length < 8) return null;
+  return Object.values(state.orders).find(function(o){
+    return digitsOnly(o.orderId) === d || digitsOnly(o.marketplaceOrderId) === d;
+  }) || null;
+}
+/* Si el pedido no está en memoria y VTEX no lo encuentra por id, traemos la
+   lista de pendientes una vez y buscamos por dígitos. */
+async function lookupOrder(code){
+  const id = toOrderId(code);
+  let order = state.orders[id] || findCached(code);
+  if(order && !order.pending && !order.error) return order;
+  // si la precarga está en vuelo, la esperamos antes de pedir de nuevo
+  if(_prefetch){
+    await _prefetch;
+    order = state.orders[id] || findCached(code);
+    if(order && !order.pending && !order.error) return order;
+  }
+  try{
+    const j = await call('order', {id:id});
+    if(j.order){ state.orders[j.order.orderId] = j.order; persist(); return j.order; }
+  }catch(e){ logg('error','Búsqueda directa fallida (' + id + '): ' + e.message); }
+  const j2 = await call('orders', {status:'ready-for-handling', full:1});
+  (j2.orders||[]).forEach(function(o){ state.orders[o.orderId] = o; });
+  persist();
+  order = findCached(code);
+  if(!order) throw new Error('El pedido ' + id + ' no aparece en VTEX');
+  return order;
+}
+function toOrderId(code){
+  const c = normCode(code);
+  if(!c) return '';
+  return (CFG.prefix||'') + c;
+}
+const STATUS = {
+  'ready-for-handling':{t:'Listo para preparación', c:'ok',   pick:true},
+  'handling':          {t:'En preparación',        c:'warn', pick:true},
+  'start-handling':    {t:'En preparación',        c:'warn', pick:true},
+  'invoiced':          {t:'Facturado',             c:'mute', pick:false},
+  'invoice':           {t:'Facturado',             c:'mute', pick:false},
+  'canceled':          {t:'CANCELADO',             c:'err',  pick:false},
+  'cancel':            {t:'CANCELADO',             c:'err',  pick:false},
+  'payment-pending':   {t:'Pago pendiente',        c:'warn', pick:false},
+  'payment-approved':  {t:'Pago aprobado',         c:'warn', pick:false},
+  'window-to-cancel':  {t:'Ventana de cancelación',c:'warn', pick:false},
+  'waiting-ffmt-authorization':{t:'Esperando autorización', c:'warn', pick:false}
+};
+function statusInfo(o){
+  if(o && o.pending) return {t:'Buscando…', c:'warn', pick:false, pending:true};
+  if(o && o.error)   return {t:'No encontrado', c:'err', pick:false, failed:true};
+  const k = String(o && o.status || '').toLowerCase();
+  return STATUS[k] || {t:(o&&o.statusDescription)||k||'Desconocido', c:'mute', pick:false};
+}
+
+function toast(msg, kind){
+  const t = $('#toast');
+  t.className = 'toast show ' + (kind||'');
+  t.textContent = msg;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>{ t.className='toast ' + (kind||''); }, 2600);
+}
+
+let audioCtx = null;
+function beep(ok){
+  if(!CFG.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'sine';
+    o.frequency.value = ok ? 1180 : 220;
+    g.gain.setValueAtTime(.0001, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.22, audioCtx.currentTime+.01);
+    g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime+(ok?.16:.42));
+    o.start(); o.stop(audioCtx.currentTime + (ok?.18:.45));
+  }catch(e){}
+}
+
+function ph(text, seed){
+  const colors = ['#1e4fd8','#0f8a4b','#a3670a','#7b3fb0','#0e7490','#b03f5a'];
+  const c = colors[Math.abs(String(seed||text).split('').reduce((a,ch)=>a+ch.charCodeAt(0),0)) % colors.length];
+  const t = String(text||'?').slice(0,3).toUpperCase();
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="'+c+'" opacity=".12"/><text x="60" y="60" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="bold" fill="'+c+'" text-anchor="middle" dominant-baseline="central">'+t+'</text></svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+const imgOf = it => it.imageUrl || ph(it.refId || it.skuId || it.name, it.skuId);
+
+/* ------------------------------ jornada ------------------------------ */
+/* La ola y los armados son de un solo día: al abrir la app en una fecha
+   distinta arranca todo en cero. El log queda como historial (y además se
+   escribe en el Google Sheet). */
+function hoyStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function resetDiario(forzado){
+  const hoy = hoyStr();
+  const prev = load(LS.day, null);
+  if(prev === hoy && !forzado) return false;
+  const habia = state.wave.length;
+  state.wave = []; state.orders = {}; state.done = {}; state.escaneados = {}; state.ind = null;
+  save(LS.day, hoy); persist();
+  if(prev && habia) logg('scan','Nueva jornada ('+hoy+'): se reiniciaron la ola y los armados del día anterior ('+habia+' pedidos)');
+  return true;
+}
+/* Si la app queda abierta y cruza la medianoche, esperamos a que haya 30 min
+   sin escaneos para no borrarle la ola a alguien que está trabajando. */
+function chequeoMedianoche(){
+  if(load(LS.day, null) === hoyStr()) return;
+  const inactivo = Date.now() - (state.lastScan || 0) > 30*60*1000;
+  if(inactivo && resetDiario()){ renderAll(); renderLog(); clearAlertMasivo(); }
+}
+
+/* ------------------------------ log ------------------------------ */
+function logg(type, msg, extra){
+  const e = {ts: Date.now(), type: type, msg: msg};
+  state.log.unshift(e);
+  if(state.log.length > 500) state.log.length = 500;
+  save(LS.log, state.log);
+  if($('#sec-oncity .oc-view.active') && $('#sec-oncity .oc-view.active').id === 'view-log') renderLog();
+  const bl = $('#bLog'); if(bl) bl.textContent = state.log.length;
+  // espejo en el Sheet (best effort, nunca bloquea la operación)
+  if(!CFG.demo && CFG.sync){
+    call('log', {tipo:type, msg:msg, extra: extra?JSON.stringify(extra):''}).catch(()=>{});
+  }
+}
+
+/* ------------------------------ api ------------------------------ */
+/* Todo pasa por el backend de Kenta (el mismo del escaneo de MercadoLibre),
+   con la sesión de Google ya iniciada. Acá no hay credenciales ni URLs sueltas. */
+async function call(action, params){
+  if(CFG.demo) return MOCK(action, params||{});
+  const accion = 'oncity' + action.charAt(0).toUpperCase() + action.slice(1);
+  try{
+    const r = await api(accion, params || {});
+    if(!r || r.status !== 'OK') throw new Error((r && (r.msg || r.error)) || 'El backend no respondió OK');
+    setConn(true, r.vtex);
+    return r;
+  }catch(err){
+    if(err && err.message === 'SESION') throw err;   // la sesión venció: lo maneja el Flex
+    setConn(false, null);
+    throw err;
+  }
+}
+
+function setConn(backendOk, vtex){
+  state.conn.backend = backendOk;
+  if(vtex !== undefined && vtex !== null) state.conn.vtex = !!(vtex && vtex.ok !== false);
+  renderConn();
+}
+
+function renderConn(){
+  const dc = $('#dotConn'), tc = $('#txtConn'), dv = $('#dotVtex'), tv = $('#txtVtex');
+  if(CFG.demo){
+    dc.className='dot warn'; tc.textContent='Modo demo';
+    dv.className='dot warn'; tv.textContent='VTEX simulada';
+    return;
+  }
+  if(state.conn.backend === null){ dc.className='dot'; tc.textContent='Sin verificar'; }
+  else if(state.conn.backend){ dc.className='dot ok'; tc.textContent='Proxy conectado'; }
+  else { dc.className='dot err'; tc.textContent='Proxy sin respuesta'; }
+  if(state.conn.vtex === null || state.conn.vtex === undefined){ dv.className='dot'; tv.textContent='VTEX ?'; }
+  else if(state.conn.vtex){ dv.className='dot ok'; tv.textContent='VTEX OK'; }
+  else { dv.className='dot err'; tv.textContent='VTEX con error'; }
+}
+
+async function ping(silent){
+  if(CFG.demo){ renderConn(); return; }
+  try{
+    const j = await call('ping',{});
+    if(!silent) toast('Conexión OK', 'ok');
+    logg('vtex','Ping al proxy correcto');
+    return j;
+  }catch(e){
+    if(!silent) toast('No se pudo conectar: ' + e.message, 'err');
+    logg('error','Ping fallido: ' + e.message);
+  }
+}
+
+/* ------------------------------ precarga ------------------------------ */
+/* El escaneo tiene que salir de memoria, no de la red. Apenas abre la app
+   traemos todos los pedidos listos para preparación y los dejamos cacheados;
+   a partir de ahí cada etiqueta se resuelve en microsegundos. */
+let _prefetch = null;
+function prefetch(force){
+  if(_prefetch && !force) return _prefetch;
+  _prefetch = call('orders', {status:'ready-for-handling', full:1})
+    .then(function(j){
+      const list = j.orders || [];
+      list.forEach(function(o){ state.orders[o.orderId] = o; });
+      state.prefetchTs = Date.now();
+      saveOrders(); scheduleRender();
+      logg('vtex','Precarga: ' + list.length + ' pedidos en memoria');
+      return list;
+    })
+    .catch(function(e){
+      _prefetch = null;
+      logg('error','Precarga fallida: ' + e.message);
+      return [];
+    });
+  return _prefetch;
+}
+function marcarPendiente(delta){
+  state.pendientes = Math.max(0, state.pendientes + delta);
+  const el = $('#pendChip');
+  if(el){
+    el.hidden = state.pendientes === 0;
+    el.innerHTML = '<i class="dot warn live"></i>' + state.pendientes + ' resolviendo…';
+  }
+}
+
+/* ------------------------ estado compartido (Sheet) ------------------------
+   La planilla es la fuente de verdad: ahí se ve lo que escanearon TODAS las
+   PCs. El navegador guarda una copia para responder rápido, pero quien decide
+   si un pedido ya estaba escaneado es el Sheet. */
+
+function post(body){
+  if(CFG.demo || !CFG.sync) return Promise.resolve(null);
+  const accion = body.action;
+  const params = Object.assign({}, body); delete params.action;
+  return call(accion, params)
+    .then(function(j){ marcarSync(true); return j; })
+    .catch(function(e){ marcarSync(false); throw e; });
+}
+
+function marcarSync(ok){
+  state.syncOk = ok;
+  if(ok) state.syncTs = Date.now();
+  const d = $('#dotSync'), t = $('#txtSync');
+  if(!d) return;
+  if(CFG.demo || !CFG.sync){ d.className='dot'; t.textContent = CFG.maquina + ' · sin sync'; return; }
+  d.className = 'dot ' + (ok===null ? '' : (ok ? 'ok' : 'err'));
+  t.textContent = CFG.maquina + (ok===false ? ' · sin sincronizar' : '');
+}
+
+/* Resumen de un pedido tal como viaja a la planilla. */
+function resumenPedido(order){
+  const its = order.items || [];
+  return {
+    id: order.orderId, seq: order.sequence||'', cliente: order.clientName||'',
+    destino: (order.shipping && (order.shipping.city || order.shipping.state)) || '',
+    estado: statusInfo(order).t,
+    skus: its.map(function(i){ return i.skuId; }).join(' / '),
+    productos: its.map(function(i){ return (Number(i.quantity)>1 ? i.quantity+'x ' : '') + (i.name||''); }).join(' / '),
+    unidades: its.reduce(function(a,i){ return a + Number(i.quantity||0); }, 0)
+  };
+}
+
+/* Manda el escaneo a la planilla y devuelve si ya estaba registrado. */
+function syncScan(order, via, armado){
+  state.escritosLocales[order.orderId] = Date.now();
+  const r = resumenPedido(order);
+  r.action = 'scan'; r.dia = hoyStr(); r.via = via;
+  r.armado = armado ? 1 : 0; r.maquina = CFG.maquina;
+  return post(r);
+}
+
+/* Trae la foto del día y la mezcla con lo local: así esta PC ve lo que
+   escanearon las otras sin que nadie toque nada. */
+async function hidratar(){
+  if(CFG.demo || !CFG.sync) return;
+  let j;
+  try{ j = await call('estado', {dia: hoyStr()}); marcarSync(true); }
+  catch(e){ marcarSync(false); return; }
+
+  const ped = (j.estado && j.estado.pedidos) || [];
+  const firma = ped.map(function(r){ return r.p + (r.a?'1':'0'); }).sort().join(',');
+  if(firma === state.firmaServidor) return;      // nada cambió, no redibujamos
+  state.firmaServidor = firma;
+
+  const enServidor = {};
+  const faltantes = [];
+  ped.forEach(function(r){
+    enServidor[r.p] = true;
+    if(state.wave.indexOf(r.p) === -1){
+      if(state.orders[r.p]) state.wave.push(r.p);
+      else faltantes.push(r.p);
+    }
+    if(r.a && !state.done[r.p]){
+      state.done[r.p] = {ts: r.ta || r.t || Date.now(), user:'', maquina: r.m||''};
+    }
+    if(r.v && r.v !== 'auto' && !state.escaneados[r.p]){
+      state.escaneados[r.p] = {ts: r.t || Date.now(), maquina: r.m||'', via: r.v};
+    }
+    if((!r.v || r.v === 'auto') && state.escaneados[r.p] && state.escaneados[r.p].maquina !== CFG.maquina){
+      delete state.escaneados[r.p];
+    }
+    if(!r.a && state.done[r.p] && state.done[r.p].maquina && state.done[r.p].maquina !== CFG.maquina){
+      delete state.done[r.p];                    // lo desarmaron desde otra PC
+    }
+  });
+
+  // lo que ya no está en la planilla (lo borraron desde otra PC) sale de la ola,
+  // salvo lo que acabamos de escanear acá y todavía no llegó al servidor
+  const reciente = Date.now() - 20000;
+  state.wave = state.wave.filter(function(id){
+    if(enServidor[id]) return true;
+    if((state.escritosLocales[id]||0) > reciente) return true;
+    const o = state.orders[id];
+    if(o && (o.pending || o.error)) return true;
+    delete state.done[id];
+    delete state.escaneados[id];
+    return false;
+  });
+
+  saveWave(); saveDone(); saveScan(); scheduleRender();
+
+  // pedidos que otra PC escaneó y acá no teníamos cacheados
+  if(faltantes.length){
+    for(const id of faltantes.slice(0,25)){
+      try{
+        const r = await call('order',{id:id});
+        if(r.order){ state.orders[r.order.orderId] = r.order; if(state.wave.indexOf(r.order.orderId)===-1) state.wave.push(r.order.orderId); }
+      }catch(e){}
+    }
+    saveOrders(); saveWave(); scheduleRender();
+  }
+}
+
+/* ------------------------------ datos demo ------------------------------ */
+const DEMO_SKUS = {
+  A:{skuId:'10421', refId:'KNT-4501', ean:'7791234000181', name:'Ventilador de pie 20" 3 velocidades — Negro', price:12627.60},
+  B:{skuId:'10388', refId:'KNT-2210', ean:'7791234000198', name:'Pava eléctrica 1.7L acero inoxidable', price:7770.36},
+  C:{skuId:'10555', refId:'KNT-7788', ean:'7791234000204', name:'Set de ollas 5 piezas antiadherente', price:16190.12}
+};
+function demoItem(k, q){ const s = DEMO_SKUS[k]; return {skuId:s.skuId, refId:s.refId, ean:s.ean, name:s.name, quantity:q||1, unitPrice:s.price, imageUrl:''}; }
+const DEMO_ORDERS = [
+  {orderId:'RMS-1654761713873-01', sequence:'500024', clientName:'Marcelo Rodolfo Montivero', creationDate:'2026-08-17T00:30:00-03:00', totalValue:12627.60, status:'ready-for-handling', shipping:{city:'Neuquén', state:'NEUQUEN', address:'Av. Argentina 351', phone:'542995473871'}, items:[demoItem('A',1)]},
+  {orderId:'RMS-1654751713871-01', sequence:'500023', clientName:'Marcelo Rodolfo Montivero', creationDate:'2026-08-17T00:26:00-03:00', totalValue:12627.60, status:'canceled', shipping:{city:'Neuquén', state:'NEUQUEN', address:'Av. Argentina 351', phone:'542995473871'}, items:[demoItem('A',1)]},
+  {orderId:'RMS-1654741713783-01', sequence:'500022', clientName:'Ariel Tolosa', creationDate:'2026-08-16T22:32:00-03:00', totalValue:12627.60, status:'ready-for-handling', shipping:{city:'Cipolletti', state:'RIO NEGRO', address:'Mengelle 1120', phone:'542995111222'}, items:[demoItem('A',1)]},
+  {orderId:'RMS-1654681713454-01', sequence:'500021', clientName:'Iñaki Urruzola', creationDate:'2026-08-16T17:05:00-03:00', totalValue:7770.36, status:'ready-for-handling', shipping:{city:'Neuquén', state:'NEUQUEN', address:'Rioja 240', phone:'542995333444'}, items:[demoItem('B',1)]},
+  {orderId:'RMS-1654191710943-01', sequence:'500020', clientName:'Leandro Emanuel Garcia', creationDate:'2026-08-14T15:36:00-03:00', totalValue:12627.60, status:'ready-for-handling', shipping:{city:'Plottier', state:'NEUQUEN', address:'San Martín 890', phone:'542995555666'}, items:[demoItem('A',1)]},
+  {orderId:'RMS-1654151710660-01', sequence:'500019', clientName:'Julia Haydeé Vater', creationDate:'2026-08-14T12:25:00-03:00', totalValue:7770.36, status:'ready-for-handling', shipping:{city:'Centenario', state:'NEUQUEN', address:'Los Álamos 55', phone:'542995777888'}, items:[demoItem('B',1)]},
+  {orderId:'RMS-1653521706323-01', sequence:'500017', clientName:'Lourdes Débora Zarate Canale', creationDate:'2026-08-11T21:07:00-03:00', totalValue:16190.12, status:'ready-for-handling', shipping:{city:'Neuquén', state:'NEUQUEN', address:'Belgrano 1450', phone:'542995999000'}, items:[demoItem('C',1)]},
+  {orderId:'RMS-1653451705535-01', sequence:'500016', clientName:'Gabriela Mendez', creationDate:'2026-08-11T14:12:00-03:00', totalValue:12627.60, status:'ready-for-handling', shipping:{city:'Las Perlas, Neuquén', state:'NEUQUEN', address:'Av Argentina 351', phone:'542995473871'}, items:[demoItem('A',1)]},
+  {orderId:'RMS-1653421705238-01', sequence:'500015', clientName:'Martin Soto', creationDate:'2026-08-11T11:10:00-03:00', totalValue:12627.60, status:'ready-for-handling', shipping:{city:'Neuquén', state:'NEUQUEN', address:'Godoy 720', phone:'542995121314'}, items:[demoItem('A',1), demoItem('B',2)]}
+];
+function MOCK(action, p){
+  return new Promise(res => setTimeout(()=>{
+    if(action==='ping') res({ok:true, vtex:{ok:true}, demo:true});
+    else if(action==='orders') res({ok:true, vtex:{ok:true}, orders: DEMO_ORDERS.filter(o=>o.status==='ready-for-handling').map(o=>JSON.parse(JSON.stringify(o)))});
+    else if(action==='order'){
+      const o = DEMO_ORDERS.find(x => x.orderId === p.id || normCode(x.orderId) === normCode(p.id));
+      if(o) res({ok:true, vtex:{ok:true}, order: JSON.parse(JSON.stringify(o))});
+      else res({ok:false, error:'Pedido no encontrado en los datos de prueba'});
+    }
+    else res({ok:true, vtex:{ok:true}});
+  }, 260));
+}
+
+/* ------------------------------ ola / picking ------------------------------ */
+function waveOrders(){
+  return state.wave.map(id => state.orders[id]).filter(Boolean);
+}
+
+function addToWave(order, quiet){
+  if(!order || !order.orderId) return false;
+  state.orders[order.orderId] = order;
+  if(state.wave.indexOf(order.orderId) === -1){
+    state.wave.unshift(order.orderId);
+    saveWave(); saveOrders(); scheduleRender();
+    if(!quiet) logg('scan','Pedido agregado a la ola: ' + order.orderId);
+    return true;
+  }
+  saveOrders(); scheduleRender();
+  return false;
+}
+
+function pickingList(){
+  const map = {};
+  waveOrders().forEach(o => {
+    const si = statusInfo(o);
+    (o.items||[]).forEach(it => {
+      const key = it.skuId || it.refId || it.ean || it.name;
+      if(!map[key]) map[key] = {skuId:it.skuId, refId:it.refId, ean:it.ean, name:it.name, imageUrl:it.imageUrl, qty:0, orders:[], blocked:0};
+      if(si.pick){ map[key].qty += Number(it.quantity||0); map[key].orders.push(o.sequence || o.orderId); }
+      else { map[key].blocked += Number(it.quantity||0); }
+    });
+  });
+  return Object.values(map).sort((a,b)=> b.qty - a.qty || String(a.name).localeCompare(String(b.name)));
+}
+
+/* ------------------------------ historial ------------------------------ */
+/* Sobrevive al corte diario: es el registro de todo lo que pasó por el depósito. */
+function histPush(order, via, armado){
+  if(!order || !order.orderId || order.pending) return;
+  const k = order.orderId + '|' + hoyStr();
+  let r = state.hist.find(function(x){ return x.k === k; });
+  const items = (order.items||[]).map(function(i){
+    return {sku:i.skuId||'', name:i.name||'', q:Number(i.quantity||0), ean:i.ean||'', ref:i.refId||''};
+  });
+  if(!r){
+    r = {k:k, ts:Date.now(), dia:hoyStr(), orderId:order.orderId, seq:order.sequence||'',
+         cliente:order.clientName||'', destino:(order.shipping&&(order.shipping.city||order.shipping.state))||'',
+         estado:(statusInfo(order).t||''), via:via, armado:!!armado, items:items};
+    state.hist.unshift(r);
+    if(state.hist.length > 3000) state.hist.length = 3000;
+  }else{
+    if(armado) r.armado = true;
+    if(items.length) r.items = items;
+    if(order.sequence) r.seq = order.sequence;
+    if(order.clientName) r.cliente = order.clientName;
+    r.estado = statusInfo(order).t || r.estado;
+    r.tsUpd = Date.now();
+  }
+  saveHist();
+  renderHist();
+}
+
+function histFiltrado(){
+  const q = ($('#histSearch') ? $('#histSearch').value : '').trim().toLowerCase();
+  if(!q) return state.hist;
+  const qd = digitsOnly(q);
+  return state.hist.filter(function(r){
+    if((r.orderId||'').toLowerCase().indexOf(q) !== -1) return true;
+    if(String(r.seq||'').indexOf(q) !== -1) return true;
+    if((r.cliente||'').toLowerCase().indexOf(q) !== -1) return true;
+    if((r.destino||'').toLowerCase().indexOf(q) !== -1) return true;
+    if(qd.length >= 4 && digitsOnly(r.orderId).indexOf(qd) !== -1) return true;
+    if((r.maquina||'').toLowerCase().indexOf(q) !== -1) return true;
+    if((r.productosTxt||'').toLowerCase().indexOf(q) !== -1) return true;
+    if(String(r.skusTxt||'').toLowerCase().indexOf(q) !== -1) return true;
+    return (r.items||[]).some(function(i){
+      return String(i.sku).toLowerCase().indexOf(q) !== -1 ||
+             String(i.ean).indexOf(q) !== -1 ||
+             String(i.ref).toLowerCase().indexOf(q) !== -1 ||
+             (i.name||'').toLowerCase().indexOf(q) !== -1;
+    });
+  });
+}
+
+async function cargarHistorial(){
+  if(CFG.demo || !CFG.sync){ renderHist(); return; }
+  const c = $('#histCount'); if(c) c.textContent = 'sincronizando…';
+  try{
+    const j = await call('historial', {limit:800});
+    marcarSync(true);
+    if(!j || !Array.isArray(j.filas)){
+      // El proxy no entiende 'historial' (versión vieja del Apps Script).
+      // Nos quedamos con la copia local antes que vaciarla.
+      logg('error','El proxy no devolvió historial: actualizá el Codigo.gs en Apps Script');
+      renderHist();
+      return;
+    }
+    state.hist = j.filas.map(function(f){
+      return {k: f.dia + '|' + f.pedido, ts: f.ts || Date.now(), dia: f.dia, orderId: f.pedido,
+              seq: String(f.seq||''), cliente: f.cliente||'', destino: f.destino||'', estado: f.estado||'',
+              via: f.via||'', armado: !!f.armado, maquina: f.maquina||'',
+              items: [], productosTxt: f.productos||'', skusTxt: String(f.skus||''), unidades: f.unidades||''};
+    });
+    saveHist();
+  }catch(e){
+    marcarSync(false);
+    logg('error','No se pudo traer el historial: ' + e.message);
+  }
+  renderHist();
+}
+
+function renderHist(){
+  const el = $('#histWrap');
+  if(!el) return;
+  const rows = histFiltrado();
+  const badge = $('#bHist'); if(badge) badge.textContent = state.hist.length;
+  const cnt = $('#histCount');
+  if(cnt) cnt.textContent = rows.length === state.hist.length
+    ? state.hist.length + ' pedidos'
+    : rows.length + ' de ' + state.hist.length + ' pedidos';
+
+  if(!state.hist.length){ el.innerHTML = '<div class="empty"><div class="big">▤</div>El historial está vacío. Se llena solo a medida que escaneás.</div>'; return; }
+  if(!rows.length){ el.innerHTML = '<div class="empty">Ningún pedido coincide con la búsqueda.</div>'; return; }
+
+  el.innerHTML =
+    '<table><thead><tr>'+
+      '<th style="width:132px">Fecha</th><th style="width:74px">Sec.</th><th style="width:196px">Pedido</th>'+
+      '<th style="width:170px">Cliente</th><th>Productos</th>'+
+      '<th style="width:110px">Máquina</th><th style="width:88px">Origen</th>'+
+      '<th style="width:104px">Estado</th><th style="width:44px" class="noprint"></th>'+
+    '</tr></thead><tbody>'+
+    rows.slice(0,500).map(function(r){
+      return '<tr>'+
+        '<td class="sub mono">'+esc(new Date(r.ts).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}))+'</td>'+
+        '<td class="mono"><b>'+esc(r.seq||'—')+'</b></td>'+
+        '<td class="mono">'+esc(r.orderId)+'</td>'+
+        '<td>'+esc(r.cliente||'—')+(r.destino?'<div class="sub">'+esc(r.destino)+'</div>':'')+'</td>'+
+        '<td>'+((r.items||[]).length
+            ? r.items.map(function(i){
+                return '<div>'+(i.q>1?'<b>'+i.q+'× </b>':'')+esc(i.name||'—')+
+                       ' <span class="sub mono">· SKU '+esc(i.sku||'—')+'</span></div>';
+              }).join('')
+            : (r.productosTxt
+                ? esc(r.productosTxt)+'<div class="sub mono">SKU '+esc(r.skusTxt||'—')+'</div>'
+                : '<span class="sub">—</span>'))+'</td>'+
+        '<td class="sub">'+esc(r.maquina||'—')+'</td>'+
+        '<td><span class="tag mute">'+esc(r.via==='masivo'?'Masivo':'Individual')+'</span></td>'+
+        '<td>'+(r.armado?'<span class="tag ok">Armado</span>':'<span class="tag warn">Escaneado</span>')+'</td>'+
+        '<td class="noprint"><button class="btn sm danger" data-hdel="'+esc(r.k)+'" title="Eliminar del historial">✕</button></td>'+
+      '</tr>';
+    }).join('')+
+    '</tbody></table>'+
+    (rows.length>500 ? '<div class="empty">Mostrando los 500 más recientes. Afiná la búsqueda para ver el resto.</div>' : '');
+
+  el.querySelectorAll('[data-hdel]').forEach(function(b){
+    b.onclick = function(){
+      const k = b.getAttribute('data-hdel');
+      const r = state.hist.find(function(x){ return x.k === k; });
+      if(!r) return;
+      if(!confirm('¿Eliminar el pedido ' + (r.seq||r.orderId) + '?\nSe borra del historial en TODAS las PCs.')) return;
+      post({action:'borrar', dia:r.dia, id:r.orderId}).catch(function(){});
+      state.hist = state.hist.filter(function(x){ return x.k !== k; });
+      if(r.dia === hoyStr()){          // si es de hoy, también sale de la ola y de armados
+        state.wave = state.wave.filter(function(w){ return w !== r.orderId; });
+        delete state.done[r.orderId];
+        saveWave(); saveDone();
+      }
+      saveHist();
+      logg('scan','Eliminado del historial: ' + r.orderId);
+      renderHist(); scheduleRender();
+    };
+  });
+}
+
+function csvHist(){
+  const head = ['Fecha','Secuencia','Pedido','Cliente','Destino','SKU','EAN','Producto','Cantidad','Máquina','Origen','Estado'];
+  const body = [];
+  histFiltrado().forEach(function(r){
+    const its = (r.items||[]).length ? r.items : [{sku:r.skusTxt||'', ean:'', name:r.productosTxt||'', q:r.unidades||''}];
+    its.forEach(function(i){
+      body.push([new Date(r.ts).toLocaleString('es-AR'), r.seq, r.orderId, r.cliente, r.destino,
+                 i.sku, i.ean, i.name, i.q, r.maquina||'', r.via, r.armado?'Armado':'Escaneado']);
+    });
+  });
+  download('historial_' + new Date().toISOString().slice(0,10) + '.csv',
+    [head].concat(body).map(function(r){ return r.map(csvCell).join(';'); }).join('\r\n'));
+}
+
+/* ------------------------------ render ------------------------------ */
+function renderAll(){ renderStats(); renderPicking(); renderOrders(); renderDone(); renderConn(); renderModePill(); renderPrintHead(); }
+
+/* Encabezado que solo aparece en el papel. */
+function renderPrintHead(){
+  const os = waveOrders();
+  const pick = pickingList();
+  const unidades = pick.reduce((a,p)=>a+p.qty,0);
+  const armados = os.filter(o => state.done[o.orderId]).length;
+  $('#printHead').innerHTML =
+    '<h1>Preparación de pedidos · Kenta / OnCity</h1>'+
+    '<div class="meta">'+
+      new Date().toLocaleString('es-AR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+
+      ' · '+os.length+' pedidos · '+pick.filter(p=>p.qty>0).length+' SKUs · '+unidades+' unidades'+
+      (armados? ' · '+armados+' ya armados' : '')+
+    '</div>';
+}
+
+function renderStats(){
+  const os = waveOrders();
+  const pick = pickingList();
+  $('#stOrders').textContent = os.length;
+  $('#stSkus').textContent = pick.filter(p=>p.qty>0).length;
+  $('#stUnits').textContent = pick.reduce((a,p)=>a+p.qty,0);
+  $('#stDone').textContent = os.filter(o => state.done[o.orderId]).length;
+  $('#bMasivo').textContent = os.length;
+  $('#bLog').textContent = state.log.length;
+  const cancel = os.filter(o=>{ const si=statusInfo(o); return !si.pick && !si.pending; }).length;
+  const sinEscanear = os.filter(o => !state.escaneados[o.orderId] && statusInfo(o).pick).length;
+  $('#waveInfo').textContent = [
+    cancel ? cancel + ' pedido(s) NO están listos para preparación' : '',
+    sinEscanear ? sinEscanear + ' pendiente(s) de escanear' : ''
+  ].filter(Boolean).join(' · ');
+}
+
+function renderPicking(){
+  const rows = pickingList();
+  const el = $('#pickWrap');
+  if(!rows.length){
+    el.innerHTML = '<div class="empty"><div class="big">▤</div>Todavía no hay pedidos en la ola.<br>Escaneá etiquetas o traé los pendientes de VTEX.</div>';
+    return;
+  }
+  const total = rows.reduce((a,r)=>a+r.qty,0);
+  el.innerHTML =
+    '<table><thead><tr>'+
+      '<th style="width:56px"></th><th>Producto</th><th style="width:120px">SKU</th>'+
+      '<th style="width:130px">Referencia</th><th style="width:140px">EAN</th>'+
+      '<th style="width:90px" class="num">Unid.</th><th style="width:160px">Pedidos</th>'+
+    '</tr></thead><tbody>' +
+    rows.map(r =>
+      '<tr'+(r.qty===0?' style="opacity:.45"':'')+'>'+
+      '<td><img class="thumb" src="'+esc(r.imageUrl || ph(r.refId||r.skuId||r.name, r.skuId))+'" alt=""></td>'+
+      '<td><div class="stack"><b>'+esc(r.name||'(sin nombre)')+'</b>'+
+        (r.blocked? '<span class="sub" style="color:var(--err)">'+r.blocked+' unid. en pedidos cancelados/no listos — no bajar</span>':'')+
+      '</div></td>'+
+      '<td class="mono">'+esc(r.skuId||'—')+'</td>'+
+      '<td class="mono">'+esc(r.refId||'—')+'</td>'+
+      '<td class="mono">'+esc(r.ean||'—')+'</td>'+
+      '<td class="num"><span class="qty'+(r.qty===1?' n1':'')+'">'+r.qty+'</span></td>'+
+      '<td class="sub mono">'+esc(r.orders.slice(0,6).join(', ')) + (r.orders.length>6? ' +'+(r.orders.length-6):'') +'</td>'+
+      '</tr>').join('') +
+    '</tbody><tfoot><tr><td colspan="5" style="text-align:right;font-weight:700;padding:12px 14px">Total de unidades</td>'+
+    '<td class="num" style="padding:12px 14px"><span class="qty">'+total+'</span></td><td></td></tr></tfoot></table>';
+}
+
+function renderOrders(){
+  const os = waveOrders();
+  const el = $('#ordersWrap');
+  if(!os.length){ el.innerHTML = '<div class="empty">Sin pedidos en la ola.</div>'; return; }
+
+  let rows = '';
+  os.forEach(o => {
+    const si = statusInfo(o);
+    const d = state.done[o.orderId];
+    const its = (o.items && o.items.length) ? o.items
+              : [{name: si.pending ? 'Buscando datos en VTEX…' : (si.failed ? 'No se encontró en VTEX' : '(pedido sin ítems)'),
+                  skuId:'', quantity:0}];
+    its.forEach((it, ix) => {
+      const first = ix === 0;
+      rows += '<tr'+(first?'':' style="background:#fcfdfe"')+'>'+
+        (first
+          ? '<td class="mono"><b>'+esc(o.sequence||'—')+'</b></td>'+
+            '<td class="mono">'+esc(o.orderId)+'</td>'+
+            '<td>'+esc(o.clientName||'—')+'<div class="sub">'+esc((o.shipping&&(o.shipping.city||o.shipping.state))||'')+'</div></td>'
+          : '<td></td><td></td><td class="sub" style="padding-left:14px">↳ mismo pedido</td>')+
+        '<td class="mono"><b>'+esc(it.skuId||'—')+'</b></td>'+
+        '<td>'+esc(it.name||'—')+
+          '<div class="sub mono">Ref '+esc(it.refId||'—')+' · EAN '+esc(it.ean||'—')+'</div></td>'+
+        '<td class="num"><span class="qty'+(Number(it.quantity)===1?' n1':'')+'">'+(it.quantity||0)+'</span></td>'+
+        (first
+          ? '<td><span class="tag '+si.c+'">'+esc(si.t)+'</span></td>'+
+            '<td>'+(d ? '<span class="tag ok">'+hhmm(d.ts)+'</span>' : '<span class="sub">—</span>')+'</td>'+
+            '<td class="noprint"><button class="btn sm danger" data-rm="'+esc(o.orderId)+'" title="Quitar de la ola">✕</button></td>'
+          : '<td></td><td></td><td class="noprint"></td>')+
+      '</tr>';
+    });
+  });
+
+  el.innerHTML =
+    '<table><thead><tr>'+
+      '<th style="width:74px">Sec.</th><th style="width:200px">Pedido</th><th style="width:190px">Cliente</th>'+
+      '<th style="width:90px">SKU</th><th>Descripción del producto</th>'+
+      '<th style="width:74px" class="num">Cant.</th><th style="width:150px">Estado</th>'+
+      '<th style="width:96px">Armado</th><th style="width:44px" class="noprint"></th>'+
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+  el.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => {
+    const id = b.getAttribute('data-rm');
+    state.wave = state.wave.filter(x => x !== id);
+    persist(); renderAll(); logg('scan','Pedido quitado de la ola: ' + id);
+  });
+}
+
+function renderDone(){
+  const ids = Object.keys(state.done).sort((a,b)=> state.done[b].ts - state.done[a].ts).slice(0,15);
+  const el = $('#doneWrap');
+  if(!ids.length){ el.innerHTML = '<div class="empty">Todavía no armaste ningún pedido.</div>'; return; }
+  el.innerHTML = '<table><thead><tr><th style="width:80px">Hora</th><th style="width:80px">Sec.</th><th style="width:210px">Pedido</th><th>Cliente</th><th style="width:190px">Operario</th></tr></thead><tbody>'+
+    ids.map(id => {
+      const d = state.done[id], o = state.orders[id] || {};
+      return '<tr><td class="mono">'+hhmm(d.ts)+'</td><td class="mono"><b>'+esc(o.sequence||'—')+'</b></td>'+
+        '<td class="mono">'+esc(id)+'</td><td>'+esc(o.clientName||'—')+'</td>'+
+        '<td class="sub">'+esc(d.user||'—')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function renderLog(){
+  const f = $('#logFilter') ? $('#logFilter').value : '';
+  const rows = state.log.filter(e => !f || e.type === f).slice(0,300);
+  const el = $('#logWrap');
+  if(!rows.length){ el.innerHTML = '<div class="empty">Sin eventos registrados.</div>'; return; }
+  const tagc = {error:'err', scan:'ok', vtex:'mute', armado:'ok'};
+  el.innerHTML = rows.map(e =>
+    '<div class="logline"><span class="t">'+hhmm(e.ts)+'</span>'+
+    '<span><span class="tag '+(tagc[e.type]||'mute')+'">'+esc(e.type)+'</span></span>'+
+    '<span class="msg">'+esc(e.msg)+'</span></div>').join('');
+}
+
+function renderModePill(){
+  const p = $('#pillMode');
+  p.querySelector('span').textContent = CFG.validate ? 'Validar producto' : 'Solo mostrar';
+  p.querySelector('i').className = 'dot ' + (CFG.validate ? 'ok' : '');
+  $('#txtUser').textContent = state.user ? state.user.email : (CFG.auth ? 'Sin sesión' : 'Sin login');
+}
+
+/* ------------------------------ escaneo individual ------------------------------ */
+function scanIndividual(raw){
+  const code = normCode(raw);
+  if(!code){ return; }
+  state.lastScan = Date.now();
+  const id = toOrderId(code);
+  logg('scan','Escaneo individual: ' + code);
+
+  // Camino rápido: si ya está en memoria (precarga o escaneo previo), sale sin red.
+  const yaEsta = state.orders[id] || findCached(code);
+  if(yaEsta && !yaEsta.pending && !yaEsta.error){ mostrarPedido(yaEsta); return; }
+
+  // Camino lento: mostramos el número con el semáforo en naranja y resolvemos
+  // en paralelo. El operario puede seguir escaneando mientras tanto.
+  showInd({loading:true, id:id});
+  marcarPendiente(1);
+  lookupOrder(code)
+    .then(function(order){ marcarPendiente(-1); mostrarPedido(order); })
+    .catch(function(e){
+      marcarPendiente(-1);
+      logg('error','No se pudo traer ' + id + ': ' + e.message);
+      beep(false);
+      showInd({error:'No encontramos el pedido ' + id, detail:e.message, code:code});
+    });
+}
+
+function mostrarPedido(order){
+  const si = statusInfo(order);
+  const yaArmado = !!state.done[order.orderId];
+  state.ind = {
+    order: order,
+    picked: {},                 // key -> unidades escaneadas
+    need: (order.items||[]).reduce((a,i)=>a+Number(i.quantity||0),0),
+    got: 0,
+    blocked: !si.pick,
+    repetido: yaArmado
+  };
+
+  if(!si.pick){
+    beep(false);
+    logg('error','Pedido NO preparable: ' + order.orderId + ' (' + si.t + ')');
+  } else if(yaArmado){
+    // Repetido: avisamos fuerte pero lo dejamos pasar, por si hay que rearmarlo.
+    beep(false);
+    toast('ATENCIÓN: este pedido ya fue armado hoy', 'warn');
+    logg('error','Pedido REPETIDO: ' + order.orderId + ' (ya armado a las ' + hhmm(state.done[order.orderId].ts) + ')');
+  } else {
+    beep(true);
+  }
+
+  showInd({order:order});
+
+  // Sin validación por producto, el propio escaneo de la etiqueta es la
+  // confirmación de armado: no hay botón que apretar.
+  if(si.pick && !yaArmado && !CFG.validate) registrarArmado(order, {silent:true});
+
+  if(si.pick){
+    histPush(order, 'individual', !CFG.validate);
+    marcarEscaneado(order.orderId, 'individual');
+    syncScan(order, 'individual', !CFG.validate).then(function(r){
+      if(!r || !r.existente) return;
+      const e = r.existente;
+      if(!e.armado) return;
+      const otraPC = e.maquina && e.maquina !== CFG.maquina;
+      if(!state.done[order.orderId]){
+        state.done[order.orderId] = {ts: e.horaArmado || Date.now(), user:'', maquina: e.maquina||''};
+        saveDone(); scheduleRender();
+      }
+      if(otraPC){
+        beep(false);
+        toast('OJO: ya lo armó ' + e.maquina, 'warn');
+        logg('error','Pedido ya armado en ' + e.maquina + ': ' + order.orderId);
+        if(state.ind && state.ind.order.orderId === order.orderId) showInd({order:order});
+      }
+    }).catch(function(){});
+  }
+  if(CFG.validate && si.pick) setTimeout(()=>{ const p = $('#inProd'); if(p) p.focus(); }, 60);
+}
+
+function showInd(o){
+  const el = $('#indResult');
+  if(o.loading){
+    el.innerHTML = '<div class="result pending"><div class="head">'+
+      '<span class="icon"><i class="dot warn live" style="width:16px;height:16px"></i></span>'+
+      '<div><div class="ttl mono">'+esc(o.id)+'</div>'+
+      '<div class="sub">Escaneado ✓ · buscando en VTEX… podés seguir escaneando</div></div></div></div>';
+    return;
+  }
+  if(o.error){
+    el.innerHTML = '<div class="result error"><div class="head"><span class="icon">✕</span>'+
+      '<div><div class="ttl">'+esc(o.error)+'</div>'+
+      '<div class="sub">'+esc(o.detail||'Revisá que el código sea el de la etiqueta de Envíame y que el pedido exista en VTEX.')+'</div></div></div></div>';
+    return;
+  }
+  const order = o.order, si = statusInfo(order), st = state.ind;
+  const done = state.done[order.orderId];
+  const cls = !si.pick ? 'error' : (done ? 'warn' : 'found');
+  const icon = !si.pick ? '⛔' : (done ? '⚠' : '✔');
+  const ttl  = !si.pick ? ('NO ARMAR · ' + si.t)
+             : (done ? 'ATENCIÓN · PEDIDO REPETIDO — ya se armó a las ' + hhmm(done.ts) +
+                        (done.maquina && done.maquina !== CFG.maquina ? ' en ' + done.maquina : '')
+                     : 'Pedido listo para armar');
+
+  const items = (order.items||[]).map((it,ix) => {
+    const key = it.skuId || it.refId || it.ean || String(ix);
+    const got = (st && st.picked[key]) || 0;
+    const need = Number(it.quantity||0);
+    const ok = got >= need;
+    return '<div class="pick'+(ok&&CFG.validate?' done':'')+'">'+
+      '<img src="'+esc(imgOf(it))+'" alt="">'+
+      '<div class="info">'+
+        '<div class="name">'+esc(it.name||'(sin nombre)')+'</div>'+
+        '<div class="meta">'+
+          '<span>SKU <b>'+esc(it.skuId||'—')+'</b></span>'+
+          '<span>Ref <b>'+esc(it.refId||'—')+'</b></span>'+
+          '<span>EAN <b>'+esc(it.ean||'—')+'</b></span>'+
+        '</div>'+
+        (CFG.validate && si.pick ? '<div class="meta" style="margin-top:7px"><span class="tag '+(ok?'ok':'warn')+'">Escaneados '+got+' de '+need+'</span></div>' : '')+
+      '</div>'+
+      '<div class="bigqty"><div><div class="n">'+need+'</div><div class="l">unidad'+(need===1?'':'es')+'</div></div></div>'+
+    '</div>';
+  }).join('');
+
+  const sh = order.shipping||{};
+  el.innerHTML =
+  '<div class="result '+cls+'">'+
+    '<div class="head"><span class="icon">'+icon+'</span>'+
+      '<div><div class="ttl">'+esc(ttl)+'</div>'+
+      '<div class="sub mono">'+esc(order.orderId)+' · secuencia '+esc(order.sequence||'—')+'</div></div>'+
+      '<span class="sp"></span><span class="tag '+si.c+'">'+esc(si.t)+'</span>'+
+    '</div>'+
+    '<dl class="kv">'+
+      '<dt>Cliente</dt><dd>'+esc(order.clientName||'—')+'</dd>'+
+      '<dt>Destino</dt><dd>'+esc([sh.address, sh.city, sh.state].filter(Boolean).join(', ')||'—')+'</dd>'+
+      '<dt>Creado</dt><dd>'+esc(fecha(order.creationDate))+'</dd>'+
+      '<dt>Total</dt><dd>'+esc(money(order.totalValue))+'</dd>'+
+    '</dl>'+
+    items +
+    (si.pick ?
+      '<div class="body noprint" style="padding:14px 16px;border-top:1px solid var(--line2)">'+
+        (CFG.validate ?
+          '<div class="scanbox" style="margin-bottom:12px"><div class="wrap"><span class="ico">▥</span>'+
+          '<input id="inProd" autocomplete="off" spellcheck="false" placeholder="Escaneá el código del producto…"></div></div>' : '')+
+        '<div class="row">'+
+          '<span class="hint">'+(CFG.validate
+            ? 'Escaneá los productos para completar el pedido. Al completarlo queda registrado como armado.'
+            : 'Ya quedó registrado en “Últimos pedidos armados”. Escaneá la próxima etiqueta para seguir.')+'</span>'+
+          '<span class="sp" style="flex:1"></span>'+
+          '<button class="btn sm" id="btnNext">Siguiente pedido →</button>'+
+        '</div>'+
+      '</div>' :
+      '<div class="body noprint" style="padding:14px 16px;border-top:1px solid var(--line2)">'+
+        '<div class="row"><b style="color:var(--err)">No prepares este pedido. Dejá el bulto a un costado y avisá a administración.</b>'+
+        '<span class="sp" style="flex:1"></span><button class="btn sm" id="btnNext">Siguiente pedido →</button></div>'+
+      '</div>')+
+  '</div>';
+
+  const bn = $('#btnNext'); if(bn) bn.onclick = () => { $('#indResult').innerHTML=''; state.ind=null; $('#inInd').focus(); };
+  const ip = $('#inProd');
+  if(ip){
+    ip.addEventListener('keydown', ev => { if(ev.key==='Enter'){ ev.preventDefault(); scanProduct(ip.value); ip.value=''; } });
+  }
+}
+
+function scanProduct(raw){
+  const st = state.ind;
+  if(!st){ return; }
+  const code = String(raw||'').trim().toUpperCase();
+  if(!code) return;
+  const items = st.order.items||[];
+  let hitIx = -1;
+  items.forEach((it,ix) => {
+    const cands = [it.ean, it.refId, it.skuId, it.sellerSku].filter(Boolean).map(x=>String(x).toUpperCase());
+    if(cands.indexOf(code) !== -1) hitIx = ix;
+  });
+  if(hitIx === -1){
+    beep(false);
+    toast('Ese producto NO pertenece a este pedido', 'err');
+    logg('error','Producto incorrecto ('+code+') en pedido '+st.order.orderId);
+    return;
+  }
+  const it = items[hitIx];
+  const key = it.skuId || it.refId || it.ean || String(hitIx);
+  const need = Number(it.quantity||0);
+  const got = (st.picked[key]||0);
+  if(got >= need){
+    beep(false);
+    toast('Ya escaneaste todas las unidades de este producto','warn');
+    return;
+  }
+  st.picked[key] = got + 1;
+  st.got++;
+  beep(true);
+  logg('scan','Producto OK '+code+' ('+(got+1)+'/'+need+') en '+st.order.orderId);
+  showInd({order: st.order});
+  const p = $('#inProd'); if(p) p.focus();
+  if(st.got >= st.need){
+    beep(true);
+    registrarArmado(st.order);
+  }
+}
+
+/* Registra el armado. No borra la pantalla: el operario tiene que seguir viendo
+   qué producto poner en la caja hasta que escanee la etiqueta siguiente. */
+function registrarArmado(order, opts){
+  opts = opts || {};
+  if(!state.done[order.orderId]){
+    state.done[order.orderId] = {ts: Date.now(), user:(state.user&&state.user.email)||'', items:(order.items||[]).length};
+  }
+  addToWave(order, true);   // queda en la ola, así aparece en el listado y en la impresión
+  saveDone();
+  logg('armado','Pedido armado: ' + order.orderId + ' (sec ' + (order.sequence||'—') + ')');
+  histPush(order, 'individual', true);
+  syncScan(order, 'individual', true).catch(function(){});
+  scheduleRender();
+  if(!opts.silent) toast('Pedido ' + (order.sequence||order.orderId) + ' armado ✔', 'ok');
+}
+
+/* ------------------------------ acciones masivo ------------------------------ */
+function addByCode(raw){
+  const code = normCode(raw);
+  if(!code) return;
+  state.lastScan = Date.now();
+  const id = toOrderId(code);
+
+  // Duplicado = ya lo ESCANEÓ alguien. Que el pedido esté en la ola porque se
+  // trajo de VTEX no bloquea nada: justamente hay que escanearlo.
+  const yaEscaneado = Object.keys(state.escaneados).find(function(k){
+    return k === id || digitsOnly(k) === digitsOnly(code);
+  });
+  if(yaEscaneado){
+    const o = state.orders[yaEscaneado] || {};
+    const e = state.escaneados[yaEscaneado] || {};
+    const otra = e.maquina && e.maquina !== CFG.maquina;
+    beep(false);
+    alertMasivo('err','Etiqueta repetida — no se agregó',
+      'El pedido ' + (o.sequence ? 'secuencia ' + o.sequence : yaEscaneado) + ' ya fue escaneado' +
+      (e.ts ? ' a las ' + hhmm(e.ts) : '') + (otra ? ' en ' + e.maquina : '') + '.');
+    toast(otra ? 'Ya lo escaneó ' + e.maquina : 'Repetida: ese pedido ya se escaneó','err');
+    logg('error','Etiqueta repetida en masivo: ' + code + ' → ' + yaEscaneado);
+    return;
+  }
+  // Ya armado en el día: tampoco se agrega, es riesgo de doble envío.
+  const armado = Object.keys(state.done).find(function(k){ return k === id || digitsOnly(k) === digitsOnly(code); });
+  if(armado){
+    const o = state.orders[armado] || {};
+    beep(false);
+    alertMasivo('err','Pedido ya armado — no se agregó',
+      'La secuencia ' + (o.sequence || armado) + ' figura armada a las ' + hhmm(state.done[armado].ts) +
+      '. Si hay que rehacerlo, usá el escaneo individual.');
+    toast('Ese pedido ya fue armado hoy','err');
+    logg('error','Etiqueta ya armada en masivo: ' + code + ' → ' + armado);
+    return;
+  }
+
+  clearAlertMasivo();
+
+  // Camino rápido: ya está en memoria.
+  const cache = state.orders[id] || findCached(code);
+  if(cache && !cache.pending && !cache.error){ addToWave(cache); sumarResuelto(cache, true); return; }
+
+  // Camino lento: entra a la ola YA, en naranja, y se completa sola cuando VTEX responde.
+  const ph = {orderId:id, sequence:'', clientName:'Buscando…', items:[], pending:true};
+  state.orders[id] = ph;
+  state.wave.unshift(id);
+  saveOrders(); saveWave(); scheduleRender();
+  beep(true);
+  marcarPendiente(1);
+
+  lookupOrder(code)
+    .then(function(order){
+      marcarPendiente(-1);
+      if(order.orderId !== id){          // se resolvió con otro id (match por dígitos)
+        delete state.orders[id];
+        state.wave = state.wave.map(function(w){ return w === id ? order.orderId : w; });
+      }
+      state.orders[order.orderId] = order;
+      saveOrders(); saveWave();
+      sumarResuelto(order, true);
+    })
+    .catch(function(e){
+      marcarPendiente(-1);
+      ph.pending = false; ph.error = e.message; ph.clientName = 'No encontrado';
+      saveOrders(); scheduleRender();
+      beep(false);
+      alertMasivo('err','No se encontró el pedido',
+        id + ' — ' + e.message + '. Quedó en rojo en la lista; sacalo con la ✕.');
+      logg('error','Etiqueta sin pedido: ' + id + ' — ' + e.message);
+    });
+}
+
+/* Pedido ya resuelto: alertas, historial y confirmación al operario. */
+function sumarResuelto(order, silencioso){
+  const si = statusInfo(order);
+  histPush(order, 'masivo', false);
+  marcarEscaneado(order.orderId, 'masivo');
+
+  // La planilla manda: si otra PC ya lo escaneó, lo sacamos y avisamos.
+  syncScan(order, 'masivo', false).then(function(r){
+    if(!r || r.nuevo !== false || !r.existente) return;
+    const e = r.existente;
+    if(e.via === 'auto') return;                 // solo estaba traído de VTEX, no escaneado
+    const otraPC = e.maquina && e.maquina !== CFG.maquina;
+    if(!otraPC && !e.armado) return;
+    state.wave = state.wave.filter(function(w){ return w !== order.orderId; });
+    saveWave(); scheduleRender();
+    beep(false);
+    alertMasivo('err','Este pedido ya lo tomó ' + (e.maquina || 'otra PC') + ' — no se agregó',
+      'Secuencia ' + (e.seq || order.orderId) + ' figura ' + (e.armado ? 'ARMADA' : 'escaneada') +
+      ' en ' + (e.maquina || 'otra máquina') + '. No lo prepares de nuevo.');
+    toast('Ya lo tomó ' + (e.maquina || 'otra PC'), 'err');
+    logg('error','Duplicado entre PCs: ' + order.orderId + ' ya estaba en ' + (e.maquina||'?'));
+  }).catch(function(){});
+  if(!si.pick){
+    beep(false);
+    alertMasivo('err','Pedido ' + si.t + ' — no lo prepares',
+      'Secuencia ' + (order.sequence||order.orderId) + ' · ' + (order.clientName||'') +
+      '. Quedó marcado en rojo y sus unidades no se suman al picking.');
+    toast('OJO: ' + (order.sequence||order.orderId) + ' está ' + si.t, 'err');
+  } else {
+    if(!silencioso) beep(true);
+    toast('Sumado: ' + (order.sequence||order.orderId) + ' · ' + (order.clientName||''), 'ok');
+  }
+  scheduleRender();
+}
+
+function marcarEscaneado(id, via){
+  if(!id) return;
+  if(!state.escaneados[id]) state.escaneados[id] = {ts: Date.now(), maquina: CFG.maquina, via: via};
+  saveScan();
+}
+
+function alertMasivo(kind, titulo, detalle){
+  const el = $('#masivoAlert');
+  if(!el) return;
+  el.innerHTML = '<div class="alert '+kind+'"><span class="ic">'+(kind==='err'?'⛔':'⚠')+'</span>'+
+    '<div><b>'+esc(titulo)+'</b><span class="sub">'+esc(detalle||'')+'</span></div></div>';
+}
+function clearAlertMasivo(){ const el = $('#masivoAlert'); if(el) el.innerHTML = ''; }
+
+async function pullPending(){
+  const btn = $('#btnPull'); btn.disabled = true; btn.textContent = '⏳ Trayendo…';
+  try{
+    const list = await prefetch(true);
+    let added = 0;
+    const nuevos = [];
+    list.forEach(o => { if(addToWave(o, true)){ added++; nuevos.push(o); } });
+    saveWave(); saveOrders(); scheduleRender();
+    if(nuevos.length && !CFG.demo && CFG.sync){
+      // Se registran como "auto": quedan en la ola de todas las PCs, pero
+      // siguen estando pendientes de escanear.
+      call('lote', {dia: hoyStr(), maquina: CFG.maquina, pedidos: JSON.stringify(nuevos.map(resumenPedido))})
+        .catch(function(e){ logg('error','No se pudo registrar la ola en la planilla: ' + e.message); });
+    }
+    logg('vtex','Traídos ' + list.length + ' pedidos listos para preparación (' + added + ' nuevos)');
+    toast(added + ' pedido(s) nuevo(s) en la ola', 'ok');
+  }catch(e){
+    logg('error','Error trayendo pedidos: ' + e.message);
+    toast('Error: ' + e.message, 'err');
+  }finally{ btn.disabled = false; btn.textContent = '⭳ Traer todos los "Listo para preparación"'; }
+}
+
+async function refreshDetails(){
+  const ids = state.wave.slice();
+  if(!ids.length){ toast('La ola está vacía','warn'); return; }
+  const btn = $('#btnRefresh'); btn.disabled = true; btn.textContent = '⏳ Actualizando…';
+  let ok = 0;
+  for(const id of ids){
+    try{ const j = await call('order',{id:id}); if(j.order){ state.orders[id] = j.order; ok++; } }catch(e){}
+  }
+  persist(); renderAll();
+  logg('vtex','Detalles actualizados: ' + ok + '/' + ids.length);
+  toast('Actualizados ' + ok + ' de ' + ids.length, ok===ids.length?'ok':'warn');
+  btn.disabled = false; btn.textContent = '↻ Actualizar detalles';
+}
+
+/* ------------------------------ export ------------------------------ */
+function download(name, text){
+  const blob = new Blob(['﻿' + text], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+const csvCell = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+function csvPicking(){
+  const rows = pickingList();
+  const head = ['SKU','Referencia','EAN','Producto','Unidades','Pedidos'];
+  const body = rows.map(r => [r.skuId, r.refId, r.ean, r.name, r.qty, r.orders.join(' ')]);
+  download('picking_' + new Date().toISOString().slice(0,10) + '.csv',
+    [head, ...body].map(r => r.map(csvCell).join(';')).join('\r\n'));
+  logg('vtex','Exportada lista de picking (' + rows.length + ' SKUs)');
+}
+function csvLog(){
+  const head = ['Fecha','Tipo','Detalle'];
+  const body = state.log.map(e => [new Date(e.ts).toLocaleString('es-AR'), e.type, e.msg]);
+  download('log_' + new Date().toISOString().slice(0,10) + '.csv',
+    [head, ...body].map(r => r.map(csvCell).join(';')).join('\r\n'));
+}
+
+/* ------------------------------ login de Google ------------------------------ */
+/* Queda apagado hasta terminar las pruebas: CFG.auth = false.
+   Al activarlo hay que cargar el Client ID de Google Cloud y publicar el HTML
+   en el dominio autorizado. Solo se aceptan cuentas @bitek.com.ar (claim hd). */
+const ALLOWED_DOMAIN = 'bitek.com.ar';
+function initAuth(){
+  if(!CFG.auth || !CFG.clientId){ renderModePill(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.defer = true;
+  s.onload = () => {
+    try{
+      google.accounts.id.initialize({
+        client_id: CFG.clientId,
+        hd: ALLOWED_DOMAIN,
+        callback: (resp) => {
+          const p = JSON.parse(decodeURIComponent(atob(resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+          if(p.hd !== ALLOWED_DOMAIN){
+            toast('Solo cuentas @' + ALLOWED_DOMAIN, 'err');
+            logg('error','Login rechazado: ' + p.email);
+            return;
+          }
+          state.user = {email:p.email, name:p.name, picture:p.picture};
+          renderModePill();
+          logg('scan','Sesión iniciada: ' + p.email);
+        }
+      });
+      google.accounts.id.prompt();
+    }catch(e){ logg('error','Error de login: ' + e.message); }
+  };
+  document.head.appendChild(s);
+}
+
+/* ------------------------------ UI wiring ------------------------------ */
+function switchView(v){
+  $$('#sec-oncity .oc-tab').forEach(t => t.classList.toggle('active', t.dataset.view === v));
+  $$('#sec-oncity .oc-view').forEach(s => s.classList.toggle('active', s.id === 'view-' + v));
+  if(v==='individual') setTimeout(()=>$('#inInd').focus(), 50);
+  if(v==='masivo') setTimeout(()=>$('#inMasivo').focus(), 50);
+  if(v==='log') renderLog();
+  if(v==='hist'){ renderHist(); cargarHistorial(); setTimeout(()=>$('#histSearch').focus(), 50); }
+}
+
+function bindCfgUI(){
+  $('#cfgPrefix').value = CFG.prefix || '';
+  $('#cfgMaquina').value = CFG.maquina || '';
+  ['demo','validate','sound','sync'].forEach(k => {
+    const b = document.querySelector('[data-cfg="'+k+'"]');
+    b.classList.toggle('on', !!CFG[k]);
+    b.onclick = () => {
+      CFG[k] = !CFG[k];
+      b.classList.toggle('on', CFG[k]);
+      persist(); renderAll();
+      logg('vtex','Config: ' + k + ' = ' + CFG[k]);
+      if(k==='demo'){ toast(CFG.demo?'Modo demo activado':'Modo demo desactivado', CFG.demo?'warn':'ok'); ping(true); }
+    };
+  });
+  $('#btnSaveCfg').onclick = () => {
+    CFG.prefix = $('#cfgPrefix').value.trim();
+    CFG.maquina = $('#cfgMaquina').value.trim() || CFG.maquina;
+    persist(); marcarSync(state.syncOk);
+    toast('Configuración guardada','ok'); logg('vtex','Configuración guardada · máquina: ' + CFG.maquina);
+    ping(true);
+  };
+  $('#btnTest').onclick = () => ping(false);
+  $('#btnResetJornada').onclick = function(){
+    if(!confirm('Limpia la copia local de ESTA PC (ola, armados e historial en pantalla).\nLa planilla no se toca: si el estado compartido está prendido, se vuelve a sincronizar solo.\n¿Seguir?')) return;
+    state.wave = []; state.done = {}; state.orders = {}; state.hist = []; state.log = []; state.escaneados = {}; state.ind = null;
+    saveWave(); saveDone(); saveOrders(); saveHist(); saveScan(); save(LS.log, []);
+    save(LS.day, hoyStr());
+    clearAlertMasivo();
+    const ir = $('#indResult'); if(ir) ir.innerHTML = '';
+    renderAll(); renderHist(); renderLog();
+    logg('vtex','Copia local reiniciada');
+    state.firmaServidor = null;
+    prefetch(true).then(hidratar);
+    toast('Listo: todo en cero','ok');
+    switchView('masivo');
+  };
+  $('#btnResetDia').onclick = async function(){
+    if(!confirm('Borra los pedidos de HOY en la planilla: todas las PCs arrancan de cero.\n¿Seguir?')) return;
+    try{
+      const r = await post({action:'reset', dia:hoyStr()});
+      logg('vtex','Día reiniciado en la planilla (' + ((r&&r.borradas)||0) + ' filas)');
+      toast('Día reiniciado en todas las PCs','ok');
+    }catch(e){ toast('No se pudo reiniciar: ' + e.message,'err'); return; }
+    state.firmaServidor = null; state.escritosLocales = {};
+    $('#btnResetJornada').click();
+  };
+  $('#btnResetTodo').onclick = async function(){
+    if(!confirm('Borra el HISTORIAL COMPLETO de la planilla, de todos los días y todas las PCs.\nEsto no se puede deshacer. ¿Seguir?')) return;
+    try{
+      const r = await post({action:'reset', dia:'all'});
+      logg('vtex','Historial completo borrado (' + ((r&&r.borradas)||0) + ' filas)');
+      toast('Historial borrado','ok');
+    }catch(e){ toast('No se pudo borrar: ' + e.message,'err'); return; }
+    state.firmaServidor = null; state.escritosLocales = {};
+    $('#btnResetJornada').click();
+  };
+  $('#btnWipe').onclick = () => {
+    if(!confirm('Esto borra la ola, el log y los pedidos armados de ESTE navegador. ¿Seguir?')) return;
+    Object.values(LS).forEach(k => localStorage.removeItem(k));
+    location.reload();
+  };
+}
+
+function bindScanners(){
+  const mi = $('#inMasivo');
+  mi.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); const v = mi.value; mi.value=''; addByCode(v); } });
+  $('#btnAddMasivo').onclick = () => { const v = mi.value; mi.value=''; addByCode(v); };
+
+  const ii = $('#inInd');
+  ii.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); const v = ii.value; ii.value=''; scanIndividual(v); } });
+  $('#btnFindInd').onclick = () => { const v = ii.value; ii.value=''; scanIndividual(v); };
+  $('#btnClearInd').onclick = () => { ii.value=''; $('#indResult').innerHTML=''; state.ind=null; ii.focus(); };
+
+  // el lector escribe rápido: si nadie tiene el foco, lo mandamos al campo activo
+  document.addEventListener('keydown', e => {
+    const t = e.target;
+    if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT')) return;
+    if(e.ctrlKey||e.altKey||e.metaKey) return;
+    if(!/^[a-zA-Z0-9-]$/.test(e.key)) return;
+    const view = $('#sec-oncity .oc-view.active').id;
+    const target = view==='view-individual' ? ($('#inProd')||$('#inInd'))
+                 : (view==='view-masivo' ? $('#inMasivo')
+                 : (view==='view-hist' ? $('#histSearch') : null));
+    if(target){ target.focus(); }
+  });
+}
+
+function bindButtons(){
+  $$('#sec-oncity .oc-tab').forEach(t => t.onclick = () => switchView(t.dataset.view));
+  $('#btnPull').onclick = pullPending;
+  $('#btnRefresh').onclick = refreshDetails;
+  $('#btnClearWave').onclick = () => {
+    if(!state.wave.length) return;
+    if(!confirm('¿Vaciar la ola? Los pedidos armados quedan registrados en el log.')) return;
+    logg('scan','Ola vaciada (' + state.wave.length + ' pedidos)');
+    state.wave = []; persist(); renderAll();
+  };
+  $('#btnPrint').onclick = () => {
+    switchView('masivo');
+    document.body.classList.add('print-oncity');
+    setTimeout(function(){ window.print(); setTimeout(function(){ document.body.classList.remove('print-oncity'); }, 800); }, 150);
+  };
+  $('#btnCsv').onclick = csvPicking;
+  $('#btnLogCsv').onclick = csvLog;
+  $('#btnLogClear').onclick = () => { if(confirm('¿Borrar el log local?')){ state.log=[]; persist(); renderLog(); renderStats(); } };
+  $('#logFilter').onchange = renderLog;
+  const hs = $('#histSearch');
+  hs.addEventListener('input', renderHist);
+  hs.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); renderHist(); } });
+  $('#btnHistClearSearch').onclick = function(){ hs.value=''; renderHist(); hs.focus(); };
+  $('#btnHistCsv').onclick = csvHist;
+  $('#btnHistClear').onclick = function(){
+    if(!state.hist.length && !state.wave.length && !Object.keys(state.done).length) return;
+    if(!confirm('Esto borra el historial completo ('+state.hist.length+' pedidos), la ola de hoy y los armados del día. ¿Seguir?')) return;
+    logg('scan','Historial y jornada borrados ('+state.hist.length+' pedidos)');
+    state.hist = []; state.wave = []; state.done = {}; state.orders = {}; state.escaneados = {}; state.ind = null;
+    saveHist(); saveWave(); saveDone(); saveOrders(); saveScan();
+    renderHist(); clearAlertMasivo(); renderAll();
+    const ir = $('#indResult'); if(ir) ir.innerHTML = '';
+    prefetch(true);
+    toast('Todo en cero','ok');
+  };
+}
+
+/* ------------------------------ arranque ------------------------------ */
+function boot(){
+  bindCfgUI(); bindScanners(); bindButtons();
+  const reinicio = resetDiario();
+  renderAll(); renderLog();
+  logg('vtex','App iniciada' + (CFG.demo?' en modo demo':'') + (reinicio?' · jornada nueva, todo en cero':''));
+  renderHist();
+  marcarSync(null);
+  prefetch().then(hidratar);                    // primero la caché de VTEX, después el estado compartido
+  setInterval(function(){                       // sincronización entre PCs
+    if(document.hidden) return;
+    hidratar();
+  }, 15000);
+  setInterval(function(){
+    chequeoMedianoche();
+    if(document.hidden) return;
+    if(Date.now() - state.prefetchTs > 240000) prefetch(true);
+    else ping(true);
+  }, 60000);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) hidratar(); });
+  setTimeout(()=>$('#inMasivo').focus(), 200);
+}
+/* El Flex maneja el login y muestra la app; nosotros arrancamos cuando el
+   usuario entra por primera vez a la solapa de OnCity. */
+let arrancado = false;
+window.ONCITY_BOOT = function(emailUsuario){
+  // el rótulo del Flex puede traer el sello de versión pegado: nos quedamos con el mail
+  if(emailUsuario) state.user = {email: String(emailUsuario).split('·')[0].trim()};
+  if(arrancado){ renderModePill(); hidratar(); return; }
+  arrancado = true;
+  boot();
+};
+window.ONCITY_ACTIVA = function(){ return arrancado; };
+})();
+
 </script>
 </body>
 </html>
